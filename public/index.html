@@ -326,7 +326,8 @@
       }
 
       currentName = name;
-      socket = new WebSocket('wss://excuse-errand-desecrate.ngrok-free.dev');
+    const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
+    socket = new WebSocket(WS_URL);
 
       socket.onopen = () => {
         socket.send(JSON.stringify({ type: 'join', room, username: name }));
