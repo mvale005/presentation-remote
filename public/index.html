@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presentation Remote V1</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #3b82f6;
+      --accent-2: #2563eb;
+      --good: #22c55e;
+      --bad: #ef4444;
+      --border: rgba(255,255,255,0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 55%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: min(960px, 100%);
+      display: grid;
+      gap: 20px;
+    }
+
+    .hero, .card {
+      background: rgba(17, 24, 39, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 16px 50px rgba(0,0,0,0.25);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero { padding: 24px; }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.7rem, 4vw, 2.6rem);
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr 0.9fr;
+      gap: 20px;
+    }
+
+    .card { padding: 20px; }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+    }
+
+    label {
+      display: block;
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-align: left;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 14px 14px;
+      font-size: 1rem;
+      outline: none;
+      margin-bottom: 10px;
+    }
+
+    input:focus {
+      border-color: rgba(59,130,246,0.8);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.06s ease, opacity 0.2s ease, background 0.2s ease;
+    }
+
+    button:hover { opacity: 0.95; }
+    button:active { transform: translateY(1px); }
+
+    .primary { background: var(--accent); color: white; }
+    .primary:hover { background: var(--accent-2); }
+    .ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+    .controls {
+      display: grid;
+      gap: 12px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--bad);
+      box-shadow: 0 0 0 4px rgba(239,68,68,0.12);
+    }
+
+    .dot.connected {
+      background: var(--good);
+      box-shadow: 0 0 0 4px rgba(34,197,94,0.14);
+    }
+
+    .log, .user-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 10px;
+      max-height: 260px;
+      overflow: auto;
+    }
+
+    .log li, .user-list li {
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .big-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .big-buttons button {
+      padding: 18px 16px;
+      font-size: 1.05rem;
+    }
+
+    .next { background: var(--good); color: #052e16; }
+    .prev { background: #fbbf24; color: #422006; }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 12px;
+    }
+
+    .subtle {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .big-buttons { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <h1>Presentation Remote</h1>
+      <p>A simple first draft for remote slide control. This version connects to a live server so people in the same room can send Next and Previous actions.</p>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2 class="section-title">Join a room</h2>
+
+        <label for="nameInput">Your name</label>
+        <input id="nameInput" type="text" placeholder="Example: Alex" maxlength="32" />
+
+        <label for="roomCode">Room code</label>
+        <input id="roomCode" type="text" placeholder="Example: TEAM123" maxlength="24" />
+
+        <div class="row">
+          <button class="primary" id="joinBtn">Join room</button>
+          <button class="ghost" id="leaveBtn" disabled>Leave</button>
+        </div>
+
+        <div class="status" aria-live="polite">
+          <span class="dot" id="statusDot"></span>
+          <span id="statusText">Not connected</span>
+        </div>
+
+        <p class="footer-note">Later this can connect to a real host computer through a small server.</p>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Activity</h2>
+        <ul class="log" id="activityLog">
+          <li>Waiting for someone to join a room.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Users in room</h2>
+        <p class="subtle">This updates when people join or leave.</p>
+        <ul class="user-list" id="userList">
+          <li>No one has joined yet.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card controls">
+      <h2 class="section-title">Slide controls</h2>
+      <div class="big-buttons">
+        <button class="prev" id="prevBtn" disabled>Previous</button>
+        <button class="next" id="nextBtn" disabled>Next</button>
+      </div>
+      <p class="footer-note">For now these buttons send messages to the room and show activity in the log.</p>
+    </section>
+  </main>
+
+  <script>
+    const nameInput = document.getElementById('nameInput');
+    const roomCodeInput = document.getElementById('roomCode');
+    const joinBtn = document.getElementById('joinBtn');
+    const leaveBtn = document.getElementById('leaveBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const activityLog = document.getElementById('activityLog');
+    const userList = document.getElementById('userList');
+
+    let socket = null;
+    let currentRoom = '';
+    let currentName = '';
+    let lastClickTime = 0;
+    const CLICK_DELAY = 700;
+
+    function addLog(message) {
+      const item = document.createElement('li');
+      item.textContent = `${new Date().toLocaleTimeString()} — ${message}`;
+      activityLog.prepend(item);
+      if (activityLog.children.length > 8) {
+        activityLog.removeChild(activityLog.lastElementChild);
+      }
+    }
+
+    function renderUsers(users) {
+      userList.innerHTML = '';
+
+      if (!users || users.length === 0) {
+        const empty = document.createElement('li');
+        empty.textContent = 'No one has joined yet.';
+        userList.appendChild(empty);
+        return;
+      }
+
+      users.forEach((user) => {
+        const item = document.createElement('li');
+        item.textContent = user;
+        userList.appendChild(item);
+      });
+    }
+
+    function setConnectedState(isConnected, room = '') {
+      statusDot.classList.toggle('connected', isConnected);
+      statusText.textContent = isConnected ? `Connected to room ${room} as ${currentName}` : 'Not connected';
+      prevBtn.disabled = !isConnected;
+      nextBtn.disabled = !isConnected;
+      leaveBtn.disabled = !isConnected;
+      joinBtn.disabled = isConnected;
+      nameInput.disabled = isConnected;
+      roomCodeInput.disabled = isConnected;
+    }
+
+    function getName() {
+      return nameInput.value.trim() || 'Anonymous';
+    }
+
+    joinBtn.addEventListener('click', () => {
+      const room = roomCodeInput.value.trim().toUpperCase();
+      const name = getName();
+
+      if (!room) {
+        addLog('Enter a room code first.');
+        roomCodeInput.focus();
+        return;
+      }
+
+      currentName = name;
+      socket = new WebSocket('wss://excuse-errand-desecrate.ngrok-free.dev');
+
+      socket.onopen = () => {
+        socket.send(JSON.stringify({ type: 'join', room, username: name }));
+        currentRoom = room;
+        setConnectedState(true, room);
+        addLog(`Joined room ${room} as ${name}.`);
+      };
+
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'slide') {
+          const who = data.username ? `${data.username} ` : '';
+          addLog(`${who}clicked ${data.action}.`);
+        }
+
+        if (data.type === 'roomState') {
+          renderUsers(data.users || []);
+        }
+      };
+
+      socket.onclose = () => {
+        addLog('Disconnected.');
+        currentRoom = '';
+        currentName = '';
+        setConnectedState(false, '');
+        renderUsers([]);
+      };
+
+      socket.onerror = () => {
+        addLog('Connection error. Is the server running?');
+      };
+    });
+
+    leaveBtn.addEventListener('click', () => {
+      if (socket) socket.close();
+      roomCodeInput.value = '';
+    });
+
+    function sendSlideAction(action) {
+      const now = Date.now();
+
+      if (now - lastClickTime < CLICK_DELAY) {
+        addLog('Slow down a bit...');
+        return;
+      }
+
+      lastClickTime = now;
+
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        addLog('Join a room before using slide controls.');
+        return;
+      }
+
+      socket.send(JSON.stringify({ type: 'slide', action, username: currentName }));
+    }
+
+    prevBtn.addEventListener('click', () => sendSlideAction('Previous'));
+    nextBtn.addEventListener('click', () => sendSlideAction('Next'));
+
+    roomCodeInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') joinBtn.click();
+    });
+
+    nameInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') joinBtn.click();
+    });
+  </script>
+</body>
+</html>
