@@ -349,13 +349,20 @@
         }
       };
 
-      socket.onclose = () => {
-        addLog('Disconnected.');
-        currentRoom = '';
-        currentName = '';
-        setConnectedState(false, '');
-        renderUsers([]);
-      };
+    socket.onclose = () => {
+  addLog('Disconnected. Attempting to reconnect...');
+
+  if (currentRoom && currentName) {
+    setTimeout(() => {
+      joinBtn.click();
+    }, 2000);
+  } else {
+    currentRoom = '';
+    currentName = '';
+    setConnectedState(false, '');
+    renderUsers([]);
+  }
+};
 
       socket.onerror = () => {
         addLog('Connection error. Is the server running?');
