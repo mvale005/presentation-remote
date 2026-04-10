@@ -220,6 +220,7 @@
         <div class="row">
           <button class="primary" id="joinBtn">Join room</button>
           <button class="ghost" id="leaveBtn" disabled>Leave</button>
+          <button class="ghost" id="reconnectBtn" disabled>Reconnect</button>
         </div>
 
         <div class="status" aria-live="polite">
@@ -256,152 +257,276 @@
     </section>
   </main>
 
-  <script>
-    const nameInput = document.getElementById('nameInput');
-    const roomCodeInput = document.getElementById('roomCode');
-    const joinBtn = document.getElementById('joinBtn');
-    const leaveBtn = document.getElementById('leaveBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const statusDot = document.getElementById('statusDot');
-    const statusText = document.getElementById('statusText');
-    const activityLog = document.getElementById('activityLog');
-    const userList = document.getElementById('userList');
+<script>
+  const nameInput = document.getElementById('nameInput');
+  const roomCodeInput = document.getElementById('roomCode');
+  const joinBtn = document.getElementById('joinBtn');
+  const leaveBtn = document.getElementById('leaveBtn');
+  const reconnectBtn = document.getElementById('reconnectBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const activityLog = document.getElementById('activityLog');
+  const userList = document.getElementById('userList');
 
-    let socket = null;
-    let currentRoom = '';
-    let currentName = '';
-    let lastClickTime = 0;
-    const CLICK_DELAY = 700;
+  let socket = null;
+  let currentRoom = '';
+  let currentName = '';
+  let shouldReconnect = false;
+  let reconnectTimer = null;
+  let reconnectAttempts = 0;
 
-    function addLog(message) {
+  const CLICK_DELAY = 700;
+  const HEARTBEAT_MS = 30000;
+  const RECONNECT_BASE_DELAY = 1500;
+  const RECONNECT_MAX_DELAY = 10000;
+  const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
+
+  function addLog(message) {
+    const item = document.createElement('li');
+    item.textContent = `${new Date().toLocaleTimeString()} — ${message}`;
+    activityLog.prepend(item);
+    if (activityLog.children.length > 8) {
+      activityLog.removeChild(activityLog.lastElementChild);
+    }
+  }
+
+  function renderUsers(users) {
+    userList.innerHTML = '';
+
+    if (!users || users.length === 0) {
+      const empty = document.createElement('li');
+      empty.textContent = 'No one has joined yet.';
+      userList.appendChild(empty);
+      return;
+    }
+
+    users.forEach((user) => {
       const item = document.createElement('li');
-      item.textContent = `${new Date().toLocaleTimeString()} — ${message}`;
-      activityLog.prepend(item);
-      if (activityLog.children.length > 8) {
-        activityLog.removeChild(activityLog.lastElementChild);
+      item.textContent = user;
+      userList.appendChild(item);
+    });
+  }
+
+  function setConnectedState(isConnected, room = '') {
+    statusDot.classList.toggle('connected', isConnected);
+    statusText.textContent = isConnected
+      ? `Connected to room ${room} as ${currentName}`
+      : (currentRoom ? `Disconnected from room ${currentRoom}` : 'Not connected');
+
+    prevBtn.disabled = !isConnected;
+    nextBtn.disabled = !isConnected;
+    leaveBtn.disabled = !isConnected && !currentRoom;
+    joinBtn.disabled = isConnected;
+    reconnectBtn.disabled = isConnected || !currentRoom || !currentName;
+    nameInput.disabled = isConnected;
+    roomCodeInput.disabled = isConnected;
+  }
+
+  function getName() {
+    return nameInput.value.trim() || 'Anonymous';
+  }
+
+  function clearReconnectTimer() {
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
+  }
+
+  function scheduleReconnect() {
+    if (!shouldReconnect || !currentRoom || !currentName) return;
+    if (reconnectTimer) return;
+
+    const delay = Math.min(RECONNECT_BASE_DELAY * Math.max(1, reconnectAttempts + 1), RECONNECT_MAX_DELAY);
+    reconnectAttempts += 1;
+
+    addLog(`Reconnecting in ${Math.round(delay / 1000)} seconds...`);
+
+    reconnectTimer = setTimeout(() => {
+      reconnectTimer = null;
+
+      if (document.visibilityState === 'visible') {
+        connectSocket();
+      } else {
+        scheduleReconnect();
       }
+    }, delay);
+  }
+
+  function connectSocket() {
+    const room = roomCodeInput.value.trim().toUpperCase() || currentRoom;
+    const name = nameInput.value.trim() || currentName || 'Anonymous';
+
+    if (!room) {
+      addLog('Enter a room code first.');
+      roomCodeInput.focus();
+      return;
     }
 
-    function renderUsers(users) {
-      userList.innerHTML = '';
+    currentRoom = room;
+    currentName = name;
+    shouldReconnect = true;
+    clearReconnectTimer();
 
-      if (!users || users.length === 0) {
-        const empty = document.createElement('li');
-        empty.textContent = 'No one has joined yet.';
-        userList.appendChild(empty);
-        return;
-      }
-
-      users.forEach((user) => {
-        const item = document.createElement('li');
-        item.textContent = user;
-        userList.appendChild(item);
-      });
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      try { socket.close(); } catch (err) {}
+    } else if (socket && socket.readyState === WebSocket.CONNECTING) {
+      try { socket.close(); } catch (err) {}
     }
 
-    function setConnectedState(isConnected, room = '') {
-      statusDot.classList.toggle('connected', isConnected);
-      statusText.textContent = isConnected ? `Connected to room ${room} as ${currentName}` : 'Not connected';
-      prevBtn.disabled = !isConnected;
-      nextBtn.disabled = !isConnected;
-      leaveBtn.disabled = !isConnected;
-      joinBtn.disabled = isConnected;
-      nameInput.disabled = isConnected;
-      roomCodeInput.disabled = isConnected;
-    }
-
-    function getName() {
-      return nameInput.value.trim() || 'Anonymous';
-    }
-
-    joinBtn.addEventListener('click', () => {
-      const room = roomCodeInput.value.trim().toUpperCase();
-      const name = getName();
-
-      if (!room) {
-        addLog('Enter a room code first.');
-        roomCodeInput.focus();
-        return;
-      }
-
-      currentName = name;
-    const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
     socket = new WebSocket(WS_URL);
 
-      socket.onopen = () => {
-        socket.send(JSON.stringify({ type: 'join', room, username: name }));
-        currentRoom = room;
-        setConnectedState(true, room);
-        addLog(`Joined room ${room} as ${name}.`);
-      };
+    socket.onopen = () => {
+      reconnectAttempts = 0;
+      setConnectedState(true, currentRoom);
+      addLog(`Connected to room ${currentRoom} as ${currentName}.`);
 
-      socket.onmessage = (event) => {
+      socket.send(JSON.stringify({
+        type: 'join',
+        room: currentRoom,
+        username: currentName
+      }));
+    };
+
+    socket.onmessage = (event) => {
+      try {
         const data = JSON.parse(event.data);
+
+        if (data.type === 'roomState') {
+          renderUsers(data.users || []);
+        }
 
         if (data.type === 'slide') {
           const who = data.username ? `${data.username} ` : '';
           addLog(`${who}clicked ${data.action}.`);
         }
 
-        if (data.type === 'roomState') {
-          renderUsers(data.users || []);
+        if (data.type === 'pong') {
+          return;
         }
-      };
+      } catch (err) {
+        console.warn('Bad message from server:', err);
+      }
+    };
 
     socket.onclose = () => {
-  addLog('Disconnected. Attempting to reconnect...');
+      socket = null;
+      setConnectedState(false, currentRoom);
+      addLog('Disconnected.');
 
-  if (currentRoom && currentName) {
-    setTimeout(() => {
-      joinBtn.click();
-    }, 2000);
-  } else {
+      if (shouldReconnect && currentRoom && currentName) {
+        scheduleReconnect();
+      }
+    };
+
+    socket.onerror = () => {
+      addLog('Connection error.');
+    };
+  }
+
+  joinBtn.addEventListener('click', () => {
+    const room = roomCodeInput.value.trim().toUpperCase();
+    const name = getName();
+
+    if (!room) {
+      addLog('Enter a room code first.');
+      roomCodeInput.focus();
+      return;
+    }
+
+    currentRoom = room;
+    currentName = name;
+    shouldReconnect = true;
+    connectSocket();
+  });
+
+  reconnectBtn.addEventListener('click', () => {
+    if (!currentRoom) {
+      addLog('Join a room first.');
+      return;
+    }
+
+    shouldReconnect = true;
+    connectSocket();
+  });
+
+  leaveBtn.addEventListener('click', () => {
+    shouldReconnect = false;
+    clearReconnectTimer();
+
+    if (socket) {
+      try { socket.close(); } catch (err) {}
+    }
+
+    socket = null;
+    roomCodeInput.value = '';
     currentRoom = '';
     currentName = '';
     setConnectedState(false, '');
     renderUsers([]);
-  }
-};
+    addLog('Left room.');
+  });
 
-      socket.onerror = () => {
-        addLog('Connection error. Is the server running?');
-      };
-    });
+  function sendSlideAction(action) {
+    const now = Date.now();
 
-    leaveBtn.addEventListener('click', () => {
-      if (socket) socket.close();
-      roomCodeInput.value = '';
-    });
-
-    function sendSlideAction(action) {
-      const now = Date.now();
-
-      if (now - lastClickTime < CLICK_DELAY) {
-        addLog('Slow down a bit...');
-        return;
-      }
-
-      lastClickTime = now;
-
-      if (!socket || socket.readyState !== WebSocket.OPEN) {
-        addLog('Join a room before using slide controls.');
-        return;
-      }
-
-      socket.send(JSON.stringify({ type: 'slide', action, username: currentName }));
+    if (now - lastClickTime < CLICK_DELAY) {
+      addLog('Slow down a bit...');
+      return;
     }
 
-    prevBtn.addEventListener('click', () => sendSlideAction('Previous'));
-    nextBtn.addEventListener('click', () => sendSlideAction('Next'));
+    lastClickTime = now;
 
-    roomCodeInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') joinBtn.click();
-    });
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      addLog('Join a room before using slide controls.');
+      return;
+    }
 
-    nameInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') joinBtn.click();
-    });
-  </script>
+    socket.send(JSON.stringify({
+      type: 'slide',
+      action,
+      username: currentName
+    }));
+  }
+
+  let lastClickTime = 0;
+
+  prevBtn.addEventListener('click', () => sendSlideAction('Previous'));
+  nextBtn.addEventListener('click', () => sendSlideAction('Next'));
+
+  roomCodeInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') joinBtn.click();
+  });
+
+  nameInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') joinBtn.click();
+  });
+
+  setInterval(() => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ type: 'ping', source: 'client' }));
+    }
+  }, HEARTBEAT_MS);
+
+  function attemptResumeConnection() {
+    if (!shouldReconnect || !currentRoom || !currentName) return;
+
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      clearReconnectTimer();
+      connectSocket();
+    }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      attemptResumeConnection();
+    }
+  });
+
+  window.addEventListener('focus', attemptResumeConnection);
+  window.addEventListener('pageshow', attemptResumeConnection);
+</script>
 </body>
 </html>
