@@ -137,6 +137,22 @@ wss.on('connection', (ws) => {
 
         console.log(`${username} clicked ${action} in room ${room}`);
       }
+if (data.type === 'slideState') {
+  const info = clientInfo.get(ws);
+  if (!info) return;
+
+  const { room, username } = info;
+  const slideNumber = Number(data.slideNumber || 1);
+
+  broadcastToRoom(room, {
+    type: 'slideState',
+    slideNumber,
+    username
+  });
+
+  console.log(`${username} updated slide to ${slideNumber} in room ${room}`);
+}
+
     } catch (err) {
       console.error('Bad message:', err.message);
     }
