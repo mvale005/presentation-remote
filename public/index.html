@@ -323,33 +323,42 @@
       }
     }
 
-    @media (max-width: 760px) {
-      body {
-        padding: 14px;
-      }
+@media (max-width: 760px) {
+  body {
+    padding: 14px;
+  }
 
-      .hero,
-      .card {
-        border-radius: 18px;
-      }
+  .app {
+    display: flex;
+    flex-direction: column;
+  }
 
-      .big-buttons {
-        grid-template-columns: 1fr;
-      }
+  .controls {
+    order: -1;
+  }
 
-      .row {
-        flex-direction: column;
-      }
+  .hero,
+  .card {
+    border-radius: 18px;
+  }
 
-      button {
-        width: 100%;
-      }
+  .big-buttons {
+    grid-template-columns: 1fr;
+  }
 
-      .hero-meta {
-        width: 100%;
-        justify-content: flex-start;
-      }
-    }
+  .row {
+    flex-direction: column;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  .hero-meta {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
   </style>
 </head>
 <body>
