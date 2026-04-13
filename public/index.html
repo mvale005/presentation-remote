@@ -510,11 +510,17 @@
         hostStatusBar.classList.add('connected');
         hostStatusDot.classList.add('connected');
         hostStatusText.textContent = 'Host connected';
+        prevBtn.disabled = false;
+        nextBtn.disabled = false;
       } else {
         hostStatusBar.classList.add('warm');
         hostStatusText.textContent = 'Host not connected';
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
       }
     }
+
+
     function setConnectedState(isConnected, room = '') {
       statusBar.classList.remove('connected', 'warm');
       connectionPill.classList.remove('connected', 'warm');
