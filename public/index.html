@@ -397,6 +397,11 @@
           <span id="statusText">Not connected</span>
         </div>
 
+        <div class="status" id="hostStatusBar" aria-live="polite">
+          <span class="dot" id="hostStatusDot"></span>
+          <span id="hostStatusText">Host not connected</span>
+        </div>
+       
       </div>
 
       <div class="card">
@@ -451,6 +456,9 @@
     const roomLabel = document.getElementById('roomLabel');
     const activityLog = document.getElementById('activityLog');
     const userList = document.getElementById('userList');
+    const hostStatusBar = document.getElementById('hostStatusBar');
+    const hostStatusDot = document.getElementById('hostStatusDot');
+    const hostStatusText = document.getElementById('hostStatusText');
 
     let socket = null;
     let currentRoom = '';
@@ -461,7 +469,7 @@
     let lastClickTime = 0;
 
     const CLICK_DELAY = 700;
-    const HEARTBEAT_MS = 30000;
+    const HEARTBEAT_MS = 5000;
     const RECONNECT_BASE_DELAY = 1500;
     const RECONNECT_MAX_DELAY = 10000;
     const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
@@ -492,6 +500,21 @@
       });
     }
 
+    function setHostPresence(users) {
+      const hasHost = users && users.includes('Windows Host');
+
+      hostStatusBar.classList.remove('connected', 'warm');
+      hostStatusDot.classList.remove('connected');
+
+      if (hasHost) {
+        hostStatusBar.classList.add('connected');
+        hostStatusDot.classList.add('connected');
+        hostStatusText.textContent = 'Host connected';
+      } else {
+        hostStatusBar.classList.add('warm');
+        hostStatusText.textContent = 'Host not connected';
+      }
+    }
     function setConnectedState(isConnected, room = '') {
       statusBar.classList.remove('connected', 'warm');
       connectionPill.classList.remove('connected', 'warm');
@@ -595,7 +618,9 @@
           const data = JSON.parse(event.data);
 
           if (data.type === 'roomState') {
-            renderUsers(data.users || []);
+            const users = data.users || [];
+            renderUsers(users);
+            setHostPresence(users);
           }
 
           if (data.type === 'slide') {
