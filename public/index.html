@@ -436,6 +436,7 @@
         <button class="prev" id="prevBtn" disabled>Previous</button>
         <button class="next" id="nextBtn" disabled>Next</button>
       </div>
+      <p id="hostHint" class="footer-note">Waiting for host to connect...</p>
     </section>
   </main>
 
@@ -502,6 +503,7 @@
 
     function setHostPresence(users) {
       const hasHost = users && users.includes('Windows Host');
+      const hostHint = document.getElementById('hostHint');
 
       hostStatusBar.classList.remove('connected', 'warm');
       hostStatusDot.classList.remove('connected');
@@ -512,11 +514,15 @@
         hostStatusText.textContent = 'Host connected';
         prevBtn.disabled = false;
         nextBtn.disabled = false;
+
+        if (hostHint) hostHint.textContent = 'Ready to control slides';
       } else {
         hostStatusBar.classList.add('warm');
         hostStatusText.textContent = 'Host not connected';
         prevBtn.disabled = true;
         nextBtn.disabled = true;
+
+        if (hostHint) hostHint.textContent = 'Waiting for host to connect...';
       }
     }
 
