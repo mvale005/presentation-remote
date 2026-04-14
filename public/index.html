@@ -94,17 +94,11 @@
       padding: 10px 14px;
       color: var(--text);
       font-size: 0.92rem;
+      font-weight: 600;
       white-space: nowrap;
     }
 
-    .pill .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: var(--danger);
-      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
-      flex: 0 0 auto;
-    }
+
 
     .pill.connected .dot {
       background: var(--good);
@@ -432,8 +426,11 @@
       <div>
         <h1>Presentation Remote</h1>
       </div>
-   
-      <div class="pill warm" id="roomPill"><span class="dot"></span><span id="roomLabel">Room: —</span></div>
+
+      <div class="pill" id="roomPill">
+        <span id="roomLabel">Room: —</span>
+      </div>
+
       </div>
     </section>
 
@@ -600,8 +597,8 @@
       } else {
         statusDot.classList.remove('connected');
         if (room) {
-          statusBar.classList.add('warm');   
-        } 
+          statusBar.classList.add('warm');
+        }
       }
 
       statusText.textContent = isConnected
