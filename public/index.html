@@ -437,6 +437,7 @@
         <button class="next" id="nextBtn" disabled>Next</button>
       </div>
       <p id="hostHint" class="footer-note">Waiting for host to connect...</p>
+      <p id="lastAction" class="footer-note">Last action: none</p>
     </section>
   </main>
 
@@ -457,6 +458,7 @@
     const roomLabel = document.getElementById('roomLabel');
     const activityLog = document.getElementById('activityLog');
     const userList = document.getElementById('userList');
+    const lastAction = document.getElementById('lastAction');
     const hostStatusBar = document.getElementById('hostStatusBar');
     const hostStatusDot = document.getElementById('hostStatusDot');
     const hostStatusText = document.getElementById('hostStatusText');
@@ -635,10 +637,14 @@
             setHostPresence(users);
           }
 
-          if (data.type === 'slide') {
-            const who = data.username ? `${data.username} ` : '';
-            addLog(`${who}clicked ${data.action}.`);
+         if (data.type === 'slide') {
+          const who = data.username ? `${data.username}` : 'Someone';
+          addLog(`${who} clicked ${data.action}.`);
+
+          if (lastAction) {
+            lastAction.textContent = `Last action: ${who} → ${data.action}`;
           }
+}
         } catch (err) {
           console.warn('Bad message from server:', err);
         }
