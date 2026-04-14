@@ -432,17 +432,7 @@
       <div>
         <h1>Presentation Remote</h1>
       </div>
-      <div class="hero-meta">
-        <div class="pill" id="connectionPill">
-          <span class="dot"></span>
-          <span id="connectionLabel">Not connected</span>
-        </div>
-
-        <div id="connectionBanner" class="status" style="margin-top:10px;">
-          <span class="dot"></span>
-          <span id="connectionBannerText">Disconnected</span>
-        </div>
-      </div>
+   
       <div class="pill warm" id="roomPill"><span class="dot"></span><span id="roomLabel">Room: —</span></div>
       </div>
     </section>
@@ -526,10 +516,6 @@
     const statusDot = document.getElementById('statusDot');
     const statusText = document.getElementById('statusText');
     const statusBar = document.getElementById('statusBar');
-    const connectionPill = document.getElementById('connectionPill');
-    const connectionLabel = document.getElementById('connectionLabel');
-    const roomPill = document.getElementById('roomPill');
-    const roomLabel = document.getElementById('roomLabel');
     const activityLog = document.getElementById('activityLog');
     const userList = document.getElementById('userList');
     const lastAction = document.getElementById('lastAction');
@@ -606,30 +592,21 @@
 
     function setConnectedState(isConnected, room = '') {
       statusBar.classList.remove('connected', 'warm');
-      connectionPill.classList.remove('connected', 'warm');
-      roomPill.classList.remove('connected', 'warm');
+
 
       if (isConnected) {
         statusBar.classList.add('connected');
-        connectionPill.classList.add('connected');
-        roomPill.classList.add('connected');
         statusDot.classList.add('connected');
       } else {
         statusDot.classList.remove('connected');
         if (room) {
-          statusBar.classList.add('warm');
-          roomPill.classList.add('warm');
-        } else {
-          roomPill.classList.add('warm');
-        }
+          statusBar.classList.add('warm');   
+        } 
       }
 
       statusText.textContent = isConnected
         ? `Connected to room ${room} as ${currentName}`
         : (currentRoom ? `Disconnected from room ${currentRoom}` : 'Not connected');
-
-      connectionLabel.textContent = isConnected ? 'Connected' : 'Not connected';
-      roomLabel.textContent = room ? `Room: ${room}` : 'Room: —';
 
       prevBtn.disabled = !isConnected;
       nextBtn.disabled = !isConnected;
@@ -639,20 +616,6 @@
       nameInput.disabled = isConnected;
       roomCodeInput.disabled = isConnected;
 
-      const banner = document.getElementById('connectionBanner');
-      const bannerText = document.getElementById('connectionBannerText');
-
-      if (banner && bannerText) {
-        if (isConnected) {
-          banner.classList.remove('warm');
-          banner.classList.add('connected');
-          bannerText.textContent = 'Connected';
-        } else {
-          banner.classList.remove('connected');
-          banner.classList.add('warm');
-          bannerText.textContent = currentRoom ? 'Reconnecting…' : 'Disconnected';
-        }
-      }
     }
 
     function getName() {
