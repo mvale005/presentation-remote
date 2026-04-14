@@ -433,9 +433,17 @@
         <h1>Presentation Remote</h1>
       </div>
       <div class="hero-meta">
-        <div class="pill" id="connectionPill"><span class="dot"></span><span id="connectionLabel">Not connected</span>
+        <div class="pill" id="connectionPill">
+          <span class="dot"></span>
+          <span id="connectionLabel">Not connected</span>
         </div>
-        <div class="pill warm" id="roomPill"><span class="dot"></span><span id="roomLabel">Room: —</span></div>
+
+        <div id="connectionBanner" class="status" style="margin-top:10px;">
+          <span class="dot"></span>
+          <span id="connectionBannerText">Disconnected</span>
+        </div>
+      </div>
+      <div class="pill warm" id="roomPill"><span class="dot"></span><span id="roomLabel">Room: —</span></div>
       </div>
     </section>
 
@@ -630,6 +638,21 @@
       reconnectBtn.disabled = isConnected || !currentRoom || !currentName;
       nameInput.disabled = isConnected;
       roomCodeInput.disabled = isConnected;
+
+      const banner = document.getElementById('connectionBanner');
+      const bannerText = document.getElementById('connectionBannerText');
+
+      if (banner && bannerText) {
+        if (isConnected) {
+          banner.classList.remove('warm');
+          banner.classList.add('connected');
+          bannerText.textContent = 'Connected';
+        } else {
+          banner.classList.remove('connected');
+          banner.classList.add('warm');
+          bannerText.textContent = currentRoom ? 'Reconnecting…' : 'Disconnected';
+        }
+      }
     }
 
     function getName() {
