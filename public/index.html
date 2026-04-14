@@ -477,14 +477,15 @@
     const RECONNECT_MAX_DELAY = 10000;
     const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
 
-    function addLog(message) {
-      const item = document.createElement('li');
-      item.textContent = `${new Date().toLocaleTimeString()} — ${message}`;
-      activityLog.prepend(item);
-      if (activityLog.children.length > 8) {
-        activityLog.removeChild(activityLog.lastElementChild);
-      }
-    }
+   function addLog(message) {
+  const item = document.createElement('li');
+  item.textContent = message; // remove timestamp
+  activityLog.prepend(item);
+
+  if (activityLog.children.length > 6) {
+    activityLog.removeChild(activityLog.lastElementChild);
+  }
+}
 
     function renderUsers(users) {
       userList.innerHTML = '';
@@ -637,14 +638,16 @@
             setHostPresence(users);
           }
 
-         if (data.type === 'slide') {
-          const who = data.username ? `${data.username}` : 'Someone';
-          addLog(`${who} clicked ${data.action}.`);
+        if (data.type === 'slide') {
+          const who = data.username ? data.username : 'Someone';
+          const actionLabel = String(data.action || '').trim();
+
+          addLog(`${who} → ${actionLabel}`);
 
           if (lastAction) {
-            lastAction.textContent = `Last action: ${who} → ${data.action}`;
+            lastAction.textContent = `Last action: ${who} → ${actionLabel}`;
           }
-}
+        }
         } catch (err) {
           console.warn('Bad message from server:', err);
         }
