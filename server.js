@@ -90,6 +90,14 @@ function heartbeat() {
 }
 
 wss.on('connection', (ws) => {
+  ws.on('error', (err) => {
+  console.log('WebSocket error:', err.message);
+});
+
+ws.on('close', (code, reason) => {
+  const reasonText = reason ? reason.toString() : '';
+  console.log(`Socket closed. code=${code}${reasonText ? ` reason=${reasonText}` : ''}`);
+});
   ws.isAlive = true;
   ws.on('pong', heartbeat);
 
@@ -171,9 +179,19 @@ wss.on('connection', (ws) => {
     }
   });
 
-  ws.on('close', () => {
-    removeClient(ws);
-  });
+ws.on('close', (code, reason) => {
+  const info = clientInfo.get(ws);
+  const who = info?.username || 'unknown';
+  const room = info?.room || 'unknown';
+  const reasonText = reason ? reason.toString() : '';
+
+  console.log(`Socket closed for ${who} in room ${room}. code=${code}${reasonText ? ` reason=${reasonText}` : ''}`);
+  removeClient(ws);
+});
+
+
+
+
 });
 
 const interval = setInterval(() => {
@@ -186,7 +204,7 @@ const interval = setInterval(() => {
     ws.isAlive = false;
     ws.ping();
   });
-}, 30000);
+}, 5000);
 
 wss.on('close', () => {
   clearInterval(interval);
