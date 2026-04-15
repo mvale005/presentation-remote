@@ -1,32 +1,54 @@
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const WebSocket = require('ws');
+
 const publicDir = path.join(__dirname, 'public');
 
-const filePath = path.join(publicDir, req.url === '/' ? 'index.html' : req.url);
+function getContentType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
 
-fs.readFile(filePath, (err, content) => {
-  if (!err) {
-    const ext = path.extname(filePath);
-    const type = ext === '.png' ? 'image/png' : 'text/html';
-    res.writeHead(200, { 'Content-Type': type });
-    res.end(content);
+  if (ext === '.html') return 'text/html; charset=utf-8';
+  if (ext === '.json') return 'application/json; charset=utf-8';
+  if (ext === '.png') return 'image/png';
+  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+  if (ext === '.svg') return 'image/svg+xml';
+  if (ext === '.css') return 'text/css; charset=utf-8';
+  if (ext === '.js') return 'application/javascript; charset=utf-8';
+  if (ext === '.ico') return 'image/x-icon';
+
+  return 'application/octet-stream';
+}
+
+const server = http.createServer((req, res) => {
+  let requestPath = req.url.split('?')[0];
+
+  if (requestPath === '/') {
+    requestPath = '/index.html';
+  }
+
+  const filePath = path.normalize(path.join(publicDir, requestPath));
+
+  if (!filePath.startsWith(publicDir)) {
+    res.writeHead(403);
+    res.end('Forbidden');
     return;
   }
-});
-const server = http.createServer((req, res) => {
-  const filePath = path.join(publicDir, 'index.html');
 
   fs.readFile(filePath, (err, content) => {
     if (err) {
-      res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end('Error loading page');
+      res.writeHead(404);
+      res.end('Not found');
       return;
     }
 
-    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.writeHead(200, { 'Content-Type': getContentType(filePath) });
     res.end(content);
   });
 });
 
 const PORT = process.env.PORT || 3000;
+
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
@@ -96,14 +118,6 @@ function heartbeat() {
 }
 
 wss.on('connection', (ws) => {
-  ws.on('error', (err) => {
-  console.log('WebSocket error:', err.message);
-});
-
-ws.on('close', (code, reason) => {
-  const reasonText = reason ? reason.toString() : '';
-  console.log(`Socket closed. code=${code}${reasonText ? ` reason=${reasonText}` : ''}`);
-});
   ws.isAlive = true;
   ws.on('pong', heartbeat);
 
@@ -117,13 +131,17 @@ ws.on('close', (code, reason) => {
 
       if (data.type === 'join') {
         const room = String(data.room || '').trim().toUpperCase();
-        const username = String(data.username || 'Anonymous').trim() || 'Anonymous';
-        const role = String(data.role || 'viewer').trim().toLowerCase();
+        const username =
+          String(data.username || 'Anonymous').trim() || 'Anonymous';
 
         if (!room) return;
 
         const previousInfo = clientInfo.get(ws);
-        if (previousInfo && previousInfo.room && rooms.has(previousInfo.room)) {
+        if (
+          previousInfo &&
+          previousInfo.room &&
+          rooms.has(previousInfo.room)
+        ) {
           rooms.get(previousInfo.room).delete(ws);
           if (rooms.get(previousInfo.room).size === 0) {
             rooms.delete(previousInfo.room);
@@ -132,7 +150,7 @@ ws.on('close', (code, reason) => {
           }
         }
 
-        clientInfo.set(ws, { room, username, role });
+        clientInfo.set(ws, { room, username });
 
         if (!rooms.has(room)) {
           rooms.set(room, new Set());
@@ -177,25 +195,28 @@ ws.on('close', (code, reason) => {
           username,
         });
 
-        console.log(`${username} updated slide to ${slideNumber} in room ${room}`);
-        return;
+        console.log(
+          `${username} updated slide to ${slideNumber} in room ${room}`
+        );
       }
     } catch (err) {
       console.error('Bad message:', err.message);
     }
   });
 
-ws.on('close', (code, reason) => {
-  const info = clientInfo.get(ws);
-  const who = info?.username || 'unknown';
-  const room = info?.room || 'unknown';
-  const reasonText = reason ? reason.toString() : '';
+  ws.on('close', (code, reason) => {
+    const info = clientInfo.get(ws);
+    const who = info?.username || 'unknown';
+    const room = info?.room || 'unknown';
+    const reasonText = reason ? reason.toString() : '';
 
-  console.log(`Socket closed for ${who} in room ${room}. code=${code}${reasonText ? ` reason=${reasonText}` : ''}`);
-  removeClient(ws);
-});
-
-
+    console.log(
+      `Socket closed for ${who} in room ${room}. code=${code}${
+        reasonText ? ` reason=${reasonText}` : ''
+      }`
+    );
+    removeClient(ws);
+  });
 });
 
 const interval = setInterval(() => {
@@ -208,7 +229,7 @@ const interval = setInterval(() => {
     ws.isAlive = false;
     ws.ping();
   });
-}, 5000);
+}, 30000);
 
 wss.on('close', () => {
   clearInterval(interval);
