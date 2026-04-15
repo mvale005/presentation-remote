@@ -400,8 +400,28 @@
         flex-direction: column;
       }
 
+      .hero {
+        order: 1;
+      }
+
       .controls {
-        order: -1;
+        order: 2;
+      }
+
+      .grid {
+        order: 3;
+      }
+
+      .big-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        width: 100%;
+      }
+
+      .big-buttons button {
+        width: 100%;
+        min-width: 0;
       }
 
       .hero,
