@@ -1,10 +1,16 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const WebSocket = require('ws');
-
 const publicDir = path.join(__dirname, 'public');
 
+const filePath = path.join(publicDir, req.url === '/' ? 'index.html' : req.url);
+
+fs.readFile(filePath, (err, content) => {
+  if (!err) {
+    const ext = path.extname(filePath);
+    const type = ext === '.png' ? 'image/png' : 'text/html';
+    res.writeHead(200, { 'Content-Type': type });
+    res.end(content);
+    return;
+  }
+});
 const server = http.createServer((req, res) => {
   const filePath = path.join(publicDir, 'index.html');
 
@@ -188,8 +194,6 @@ ws.on('close', (code, reason) => {
   console.log(`Socket closed for ${who} in room ${room}. code=${code}${reasonText ? ` reason=${reasonText}` : ''}`);
   removeClient(ws);
 });
-
-
 
 
 });
