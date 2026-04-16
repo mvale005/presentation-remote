@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preview</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #08111f;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .box {
+      text-align: center;
+    }
+    .big {
+      font-size: 4rem;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Presentation Preview</h1>
+    <div id="slide" class="big">Slide 1</div>
+    <div id="status">Not connected</div>
+  </div>
+
+  <script>
+    const slideEl = document.getElementById('slide');
+    const statusEl = document.getElementById('status');
+
+    const WS_URL = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}`;
+    const room = 'ROOM1'; // simple for now
+
+    const socket = new WebSocket(WS_URL);
+
+    socket.onopen = () => {
+      statusEl.textContent = 'Connected';
+      socket.send(JSON.stringify({
+        type: 'join',
+        room,
+        username: 'Preview'
+      }));
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.type === 'slideState') {
+        slideEl.textContent = `Slide ${data.slideNumber}`;
+      }
+    };
+
+    socket.onclose = () => {
+      statusEl.textContent = 'Disconnected';
+    };
+  </script>
+</body>
+</html>
