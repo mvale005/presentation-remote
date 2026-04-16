@@ -61,6 +61,8 @@ const rooms = new Map();
 // socket -> { room, username }
 const clientInfo = new Map();
 
+const roomSlides = new Map();
+
 function getRoomUsers(room) {
   const clients = rooms.get(room);
   if (!clients) return [];
@@ -155,7 +157,22 @@ wss.on('connection', (ws) => {
         if (!rooms.has(room)) {
           rooms.set(room, new Set());
         }
+
+        // ADD THIS
+        if (!roomSlides.has(room)) {
+          roomSlides.set(room, 1);
+        }
+
         rooms.get(room).add(ws);
+
+        clientInfo.set(ws, { room, username });
+
+        // SEND CURRENT SLIDE TO NEW CLIENT
+        ws.send(JSON.stringify({
+          type: 'slideState',
+          slideNumber: roomSlides.get(room),
+          username
+        }));
 
         console.log(`${username} joined room ${room}`);
         broadcastRoomState(room);
@@ -167,21 +184,32 @@ wss.on('connection', (ws) => {
         if (!info) return;
 
         const { room, username } = info;
-        const action = String(data.action || '');
+        const action = String(data.action || '').toLowerCase();
 
         const clients = rooms.get(room);
         if (!clients) return;
 
+        let currentSlide = roomSlides.get(room) || 1;
+
+        if (action === 'next') {
+          currentSlide += 1;
+        }
+
+        if (action === 'previous') {
+          currentSlide = Math.max(1, currentSlide - 1);
+        }
+
+        roomSlides.set(room, currentSlide);
+
         broadcastToRoom(room, {
-          type: 'slide',
-          action,
+          type: 'slideState',
+          slideNumber: currentSlide,
           username,
         });
 
         console.log(`${username} clicked ${action} in room ${room}`);
         return;
       }
-
       if (data.type === 'slideState') {
         const info = clientInfo.get(ws);
         if (!info) return;
@@ -211,8 +239,7 @@ wss.on('connection', (ws) => {
     const reasonText = reason ? reason.toString() : '';
 
     console.log(
-      `Socket closed for ${who} in room ${room}. code=${code}${
-        reasonText ? ` reason=${reasonText}` : ''
+      `Socket closed for ${who} in room ${room}. code=${code}${reasonText ? ` reason=${reasonText}` : ''
       }`
     );
     removeClient(ws);
