@@ -207,6 +207,12 @@ wss.on('connection', (ws) => {
           username,
         });
 
+        broadcastToRoom(room, {
+          type: 'slide',
+          action,
+          username,
+        });
+
         console.log(`${username} clicked ${action} in room ${room}`);
         return;
       }
