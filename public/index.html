@@ -256,6 +256,8 @@
       }
     }
 
+
+
     .big-buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -369,9 +371,10 @@
       display: grid;
       gap: 10px;
     }
+
     .card.controls {
-  padding: 12px;
-}
+      padding: 12px;
+    }
 
     .card-header {
       display: flex;
@@ -521,6 +524,7 @@
         <h2>Slide controls</h2>
         <span class="mini-label">Remote input</span>
       </div>
+      <button class="ghost" id="viewSlidesBtn">View Slides</button>
       <div class="big-buttons">
         <button class="prev" id="prevBtn" disabled>Previous</button>
         <button class="next" id="nextBtn" disabled>Next</button>
@@ -547,6 +551,13 @@
     const hostStatusBar = document.getElementById('hostStatusBar');
     const hostStatusDot = document.getElementById('hostStatusDot');
     const hostStatusText = document.getElementById('hostStatusText');
+    const viewSlidesBtn = document.getElementById('viewSlidesBtn');
+    const slideOverlay = document.getElementById('slideOverlay');
+    const overlaySlide = document.getElementById('overlaySlide');
+    const closeOverlay = document.getElementById('closeOverlay');
+    const overlayPrev = document.getElementById('overlayPrev');
+    const overlayNext = document.getElementById('overlayNext');
+
 
     let socket = null;
     let currentRoom = '';
@@ -561,6 +572,26 @@
     const RECONNECT_BASE_DELAY = 1500;
     const RECONNECT_MAX_DELAY = 10000;
     const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
+
+    function setOverlayVisible(isVisible) {
+      slideOverlay.style.display = isVisible ? 'flex' : 'none';
+    }
+
+    viewSlidesBtn.addEventListener('click', () => {
+      setOverlayVisible(true);
+    });
+
+    closeOverlay.addEventListener('click', () => {
+      setOverlayVisible(false);
+    });
+
+    overlayPrev.addEventListener('click', () => {
+  sendSlideAction('Previous');
+});
+
+overlayNext.addEventListener('click', () => {
+  sendSlideAction('Next');
+});
 
     function addLog(message) {
       const item = document.createElement('li');
@@ -705,9 +736,14 @@
         }));
       };
 
+
       socket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+
+          if (data.type === 'slideState') {
+            overlaySlide.textContent = `Slide ${data.slideNumber}`;
+          }
 
           if (data.type === 'roomState') {
             const users = data.users || [];
@@ -726,8 +762,6 @@
               lastAction.textContent = `Last action: ${isMe ? 'You' : who} → ${actionLabel}`;
             }
           }
-
-
         } catch (err) {
           console.warn('Bad message from server:', err);
         }
@@ -855,6 +889,55 @@
 
     setConnectedState(false, '');
   </script>
+
+  <div id="slideOverlay" style="
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:#08111f;
+    z-index:1000;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+  ">
+    <div style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+
+      <button id="overlayPrev" style="
+    position:absolute;
+    left:10px;
+    top:50%;
+    transform:translateY(-50%);
+    background:transparent;
+    color:white;
+    font-size:2rem;
+    border:none;
+    opacity:0.6;
+  ">←</button>
+
+      <div id="overlaySlide" style="font-size:3rem;">
+        Slide 1
+      </div>
+
+      <button id="overlayNext" style="
+    position:absolute;
+    right:10px;
+    top:50%;
+    transform:translateY(-50%);
+    background:transparent;
+    color:white;
+    font-size:2rem;
+    border:none;
+    opacity:0.6;
+  ">→</button>
+
+    </div>
+
+    <button id="closeOverlay" class="ghost" style="position:absolute; top:10px; right:10px;">Close</button>
+
+
 </body>
 
 </html>
