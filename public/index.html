@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#08111f" />
@@ -21,16 +20,13 @@
       --accent: #60a5fa;
       --accent-2: #3b82f6;
       --good: #22c55e;
-      --good-2: #16a34a;
       --warn: #f59e0b;
       --danger: #ef4444;
       --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
       --radius: 22px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -66,16 +62,9 @@
     }
 
     .hero h1 {
-      margin: 0 0 8px;
+      margin: 0;
       font-size: clamp(1.8rem, 3.2vw, 3rem);
       letter-spacing: -0.03em;
-    }
-
-    .hero p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.5;
-      max-width: 760px;
     }
 
     .hero-meta {
@@ -109,18 +98,6 @@
       letter-spacing: 0.02em;
     }
 
-
-
-    .pill.connected .dot {
-      background: var(--good);
-      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.14);
-    }
-
-    .pill.warm .dot {
-      background: var(--warn);
-      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.14);
-    }
-
     .grid {
       display: grid;
       grid-template-columns: 1.1fr 0.95fr 0.95fr;
@@ -137,7 +114,7 @@
     }
 
     .card h2 {
-      margin: 0 0 14px;
+      margin: 0;
       font-size: 1.08rem;
       letter-spacing: -0.02em;
     }
@@ -162,7 +139,7 @@
       background: rgba(255, 255, 255, 0.04);
       color: var(--text);
       border-radius: 14px;
-      padding: 14px 14px;
+      padding: 14px;
       font-size: 1rem;
       outline: none;
       margin-bottom: 10px;
@@ -200,13 +177,8 @@
       transition: transform 0.06s ease, opacity 0.18s ease, background 0.2s ease, box-shadow 0.2s ease;
     }
 
-    button:hover {
-      opacity: 0.96;
-    }
-
-    button:active {
-      transform: translateY(1px);
-    }
+    button:hover { opacity: 0.96; }
+    button:active { transform: translateY(1px); }
 
     button:disabled {
       opacity: 0.5;
@@ -244,27 +216,26 @@
         transform: scale(1);
         box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.0);
       }
-
       50% {
         transform: scale(0.96);
         box-shadow: 0 0 0 6px rgba(96, 165, 250, 0.18);
       }
-
       100% {
         transform: scale(1);
         box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.0);
       }
     }
 
-
-
     .big-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      display: flex;
+      gap: 10px;
+      width: 100%;
     }
 
     .big-buttons button {
+      flex: 1 1 0;
+      width: auto;
+      min-width: 0;
       padding: 18px 16px;
       font-size: 1.05rem;
     }
@@ -331,7 +302,6 @@
         transform: translateY(-6px);
         opacity: 0.2;
       }
-
       to {
         transform: translateY(0);
         opacity: 1;
@@ -392,71 +362,96 @@
       letter-spacing: 0.08em;
     }
 
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #08111f;
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .overlay-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.02);
+      overflow: hidden;
+    }
+
+    .overlay-slide {
+      font-size: clamp(2.4rem, 8vw, 5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+
+    .overlay-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 64px;
+      height: 64px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.06);
+      color: white;
+      font-size: 2rem;
+      opacity: 0.65;
+      display: grid;
+      place-items: center;
+    }
+
+    .overlay-arrow:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .overlay-prev { left: 12px; }
+    .overlay-next { right: 12px; }
+
+    .overlay-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 1001;
+    }
+
     @media (max-width: 980px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
+      .grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 760px) {
-      body {
-        padding: 14px;
-      }
+      body { padding: 14px; }
 
       .app {
         display: flex;
         flex-direction: column;
       }
 
-      .hero {
-        order: 1;
-      }
-
-      .controls {
-        order: 2;
-      }
-
-      .grid {
-        order: 3;
-      }
-
-      .big-buttons {
-        display: flex;
-        gap: 10px;
-        width: 100%;
-      }
-
-      .big-buttons button {
-        flex: 1 1 0;
-        width: auto;
-        min-width: 0;
-      }
+      .hero { order: 1; }
+      .controls { order: 2; }
+      .grid { order: 3; }
 
       .hero,
-      .card {
-        border-radius: 18px;
-      }
+      .card { border-radius: 18px; }
 
-      .big-buttons {
-        grid-template-columns: 1fr;
-      }
+      .row { flex-direction: column; }
+      button { width: 100%; }
+      .hero-meta { width: 100%; justify-content: flex-start; }
 
-      .row {
-        flex-direction: column;
-      }
-
-      button {
-        width: 100%;
-      }
-
-      .hero-meta {
-        width: 100%;
-        justify-content: flex-start;
-      }
+      .overlay { padding: 10px; }
+      .overlay-arrow { width: 54px; height: 54px; font-size: 1.8rem; }
     }
   </style>
 </head>
-
 <body>
   <main class="app">
     <section class="hero">
@@ -493,7 +488,6 @@
           <span class="dot" id="hostStatusDot"></span>
           <span id="hostStatusText">Host not connected</span>
         </div>
-
       </div>
 
       <div class="card">
@@ -534,6 +528,15 @@
     </section>
   </main>
 
+  <div id="slideOverlay" class="overlay" aria-hidden="true">
+    <button id="closeOverlay" class="ghost overlay-close">Close</button>
+    <div class="overlay-inner">
+      <button id="overlayPrev" class="overlay-arrow overlay-prev" aria-label="Previous slide">←</button>
+      <div id="overlaySlide" class="overlay-slide">Slide 1</div>
+      <button id="overlayNext" class="overlay-arrow overlay-next" aria-label="Next slide">→</button>
+    </div>
+  </div>
+
   <script>
     const nameInput = document.getElementById('nameInput');
     const roomCodeInput = document.getElementById('roomCode');
@@ -551,13 +554,13 @@
     const hostStatusBar = document.getElementById('hostStatusBar');
     const hostStatusDot = document.getElementById('hostStatusDot');
     const hostStatusText = document.getElementById('hostStatusText');
+    const hostHint = document.getElementById('hostHint');
     const viewSlidesBtn = document.getElementById('viewSlidesBtn');
     const slideOverlay = document.getElementById('slideOverlay');
     const overlaySlide = document.getElementById('overlaySlide');
     const closeOverlay = document.getElementById('closeOverlay');
     const overlayPrev = document.getElementById('overlayPrev');
     const overlayNext = document.getElementById('overlayNext');
-
 
     let socket = null;
     let currentRoom = '';
@@ -566,6 +569,7 @@
     let reconnectTimer = null;
     let reconnectAttempts = 0;
     let lastClickTime = 0;
+    let overlayVisible = false;
 
     const CLICK_DELAY = 700;
     const HEARTBEAT_MS = 5000;
@@ -573,29 +577,9 @@
     const RECONNECT_MAX_DELAY = 10000;
     const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
 
-    function setOverlayVisible(isVisible) {
-      slideOverlay.style.display = isVisible ? 'flex' : 'none';
-    }
-
-    viewSlidesBtn.addEventListener('click', () => {
-      setOverlayVisible(true);
-    });
-
-    closeOverlay.addEventListener('click', () => {
-      setOverlayVisible(false);
-    });
-
-    overlayPrev.addEventListener('click', () => {
-  sendSlideAction('Previous');
-});
-
-overlayNext.addEventListener('click', () => {
-  sendSlideAction('Next');
-});
-
     function addLog(message) {
       const item = document.createElement('li');
-      item.textContent = message; // remove timestamp
+      item.textContent = message;
       activityLog.prepend(item);
 
       if (activityLog.children.length > 6) {
@@ -620,9 +604,14 @@ overlayNext.addEventListener('click', () => {
       });
     }
 
+    function setOverlayVisible(isVisible) {
+      overlayVisible = isVisible;
+      slideOverlay.style.display = isVisible ? 'flex' : 'none';
+      slideOverlay.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
+    }
+
     function setHostPresence(users) {
-      const hasHost = users && users.includes('Windows Host');
-      const hostHint = document.getElementById('hostHint');
+      const hasHost = Array.isArray(users) && users.includes('Windows Host');
 
       hostStatusBar.classList.remove('connected', 'warm');
       hostStatusDot.classList.remove('connected');
@@ -633,22 +622,18 @@ overlayNext.addEventListener('click', () => {
         hostStatusText.textContent = 'Host connected';
         prevBtn.disabled = false;
         nextBtn.disabled = false;
-
         if (hostHint) hostHint.textContent = 'Ready to control slides';
       } else {
         hostStatusBar.classList.add('warm');
         hostStatusText.textContent = 'Host not connected';
         prevBtn.disabled = true;
         nextBtn.disabled = true;
-
         if (hostHint) hostHint.textContent = 'Waiting for host to connect...';
       }
     }
 
-
     function setConnectedState(isConnected, room = '') {
       statusBar.classList.remove('connected', 'warm');
-
 
       if (isConnected) {
         statusBar.classList.add('connected');
@@ -664,14 +649,11 @@ overlayNext.addEventListener('click', () => {
         ? `Connected to room ${room} as ${currentName}`
         : (currentRoom ? `Disconnected from room ${currentRoom}` : 'Not connected');
 
-      prevBtn.disabled = !isConnected;
-      nextBtn.disabled = !isConnected;
       leaveBtn.disabled = !isConnected && !currentRoom;
       joinBtn.disabled = isConnected;
       reconnectBtn.disabled = isConnected || !currentRoom || !currentName;
       nameInput.disabled = isConnected;
       roomCodeInput.disabled = isConnected;
-
     }
 
     function getName() {
@@ -736,13 +718,14 @@ overlayNext.addEventListener('click', () => {
         }));
       };
 
-
       socket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
 
           if (data.type === 'slideState') {
-            overlaySlide.textContent = `Slide ${data.slideNumber}`;
+            if (overlaySlide) {
+              overlaySlide.textContent = `Slide ${data.slideNumber}`;
+            }
           }
 
           if (data.type === 'roomState') {
@@ -780,6 +763,35 @@ overlayNext.addEventListener('click', () => {
       socket.onerror = () => {
         addLog('Connection error.');
       };
+    }
+
+    function sendSlideAction(action) {
+      const now = Date.now();
+
+      if (now - lastClickTime < CLICK_DELAY) {
+        addLog('Slow down a bit...');
+        return;
+      }
+
+      lastClickTime = now;
+
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        addLog('Join a room before using slide controls.');
+        return;
+      }
+
+      socket.send(JSON.stringify({
+        type: 'slide',
+        action,
+        username: currentName
+      }));
+
+      const btn = action === 'Next' ? nextBtn : prevBtn;
+      if (btn) {
+        btn.classList.remove('click-flash');
+        void btn.offsetWidth;
+        btn.classList.add('click-flash');
+      }
     }
 
     joinBtn.addEventListener('click', () => {
@@ -825,36 +837,26 @@ overlayNext.addEventListener('click', () => {
       addLog('Left room.');
     });
 
-    function sendSlideAction(action) {
-      const now = Date.now();
-
-      if (now - lastClickTime < CLICK_DELAY) {
-        addLog('Slow down a bit...');
-        return;
-      }
-
-      lastClickTime = now;
-
-      if (!socket || socket.readyState !== WebSocket.OPEN) {
-        addLog('Join a room before using slide controls.');
-        return;
-      }
-
-      socket.send(JSON.stringify({
-        type: 'slide',
-        action,
-        username: currentName
-      }));
-      const btn = action === 'Next' ? nextBtn : prevBtn;
-      if (btn) {
-        btn.classList.remove('click-flash');
-        void btn.offsetWidth;
-        btn.classList.add('click-flash');
-      }
-    }
-
     prevBtn.addEventListener('click', () => sendSlideAction('Previous'));
     nextBtn.addEventListener('click', () => sendSlideAction('Next'));
+
+    if (viewSlidesBtn) {
+      viewSlidesBtn.addEventListener('click', () => {
+        setOverlayVisible(!overlayVisible);
+      });
+    }
+
+    if (closeOverlay) {
+      closeOverlay.addEventListener('click', () => setOverlayVisible(false));
+    }
+
+    if (overlayPrev) {
+      overlayPrev.addEventListener('click', () => sendSlideAction('Previous'));
+    }
+
+    if (overlayNext) {
+      overlayNext.addEventListener('click', () => sendSlideAction('Next'));
+    }
 
     roomCodeInput.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') joinBtn.click();
@@ -862,6 +864,12 @@ overlayNext.addEventListener('click', () => {
 
     nameInput.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') joinBtn.click();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && overlayVisible) {
+        setOverlayVisible(false);
+      }
     });
 
     setInterval(() => {
@@ -888,57 +896,7 @@ overlayNext.addEventListener('click', () => {
     window.addEventListener('pageshow', attemptResumeConnection);
 
     setConnectedState(false, '');
+    setOverlayVisible(false);
   </script>
-
-  <div id="slideOverlay" style="
-    display:none;
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:#08111f;
-    z-index:1000;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-  ">
-    <div style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
-
-      <button id="overlayPrev" style="
-    position:absolute;
-    left:10px;
-    top:50%;
-    transform:translateY(-50%);
-    background:transparent;
-    color:white;
-    font-size:2rem;
-    border:none;
-    opacity:0.6;
-  ">←</button>
-
-      <div id="overlaySlide" style="font-size:3rem;">
-        Slide 1
-      </div>
-
-      <button id="overlayNext" style="
-    position:absolute;
-    right:10px;
-    top:50%;
-    transform:translateY(-50%);
-    background:transparent;
-    color:white;
-    font-size:2rem;
-    border:none;
-    opacity:0.6;
-  ">→</button>
-
-    </div>
-
-    <button id="closeOverlay" class="ghost" style="position:absolute; top:10px; right:10px;">Close</button>
-
-
 </body>
-
 </html>
-```
