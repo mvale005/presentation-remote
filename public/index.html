@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <!-- PWA manifest (for installable app) -->
   <link rel="manifest" href="/manifest.json" />
@@ -109,7 +110,7 @@
         <button class="next" id="nextBtn" disabled>Next</button>
       </div>
 
- <!-- Toggle slide preview overlay -->
+      <!-- Toggle slide preview overlay -->
       <button class="ghost" id="viewSlidesBtn">View Slides</button>
 
       <!-- Helper text when host is missing -->
@@ -127,48 +128,53 @@
     <!-- Close overlay button -->
     <button id="closeOverlay" class="ghost overlay-close">Close</button>
 
-  <div class="overlay-inner">
-  <button id="overlayPrev" class="overlay-arrow overlay-prev" aria-label="Previous slide">←</button>
+    <div class="overlay-inner">
+      <button id="overlayPrev" class="overlay-arrow overlay-prev" aria-label="Previous slide">←</button>
 
-<div class="overlay-panels">
+      <div class="overlay-panels">
 
-  <!-- LEFT: CURRENT SLIDE -->
-  <div class="overlay-current">
-    <div>
-      <div class="overlay-label">Current slide</div>
-      <div id="overlaySlide" class="overlay-slide">Slide 1</div>
-    </div>
-  </div>
+        <!-- LEFT: CURRENT SLIDE -->
+        <div class="overlay-current">
+          <div>
+            <div class="overlay-label">Current slide</div>
+            <div class="slide-frame">
+              <div id="overlaySlide" class="slide-content">Slide 1</div>
+            </div>
+          </div>
+        </div>
 
-  <!-- RIGHT COLUMN -->
-  <div class="overlay-side">
+        <!-- RIGHT COLUMN -->
+        <div class="overlay-side">
 
-    <!-- TOP RIGHT: NEXT SLIDE -->
-    <div class="overlay-next-card">
-      <div>
-        <div class="overlay-label">Next slide</div>
-        <div id="overlayNextSlide" class="overlay-next-slide">Slide 2</div>
+          <!-- TOP RIGHT: NEXT SLIDE -->
+          <div class="overlay-next-card">
+            <div>
+              <div class="overlay-label">Next slide</div>
+              <div class="slide-frame small">
+                <div id="overlayNextSlide" class="slide-content small">Slide 2</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTTOM RIGHT: NOTES -->
+          <div class="overlay-notes">
+            <div class="overlay-label">Notes</div>
+            <div id="overlayNotes" class="overlay-notes-text">
+              No notes yet
+            </div>
+          </div>
+
+        </div>
+
       </div>
+
+      <button id="overlayNext" class="overlay-arrow overlay-next" aria-label="Next slide">→</button>
     </div>
-
-    <!-- BOTTOM RIGHT: NOTES -->
-    <div class="overlay-notes">
-      <div class="overlay-label">Notes</div>
-      <div id="overlayNotes" class="overlay-notes-text">
-        No notes yet
-      </div>
-    </div>
-
-  </div>
-
-</div>
-
-  <button id="overlayNext" class="overlay-arrow overlay-next" aria-label="Next slide">→</button>
-</div>
   </div>
 
   <!-- Main application logic -->
   <script src="/app.js"></script>
 
 </body>
+
 </html>

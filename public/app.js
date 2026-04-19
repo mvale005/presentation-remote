@@ -214,18 +214,54 @@ function connectSocket() {
         try {
             const data = JSON.parse(event.data);
 
-            // Slide preview / overlay text
-            if (data.type === 'slideState') {
-                const currentSlide = Number(data.slideNumber) || 1;
+     // Slide preview / overlay visuals
+// Slide preview / overlay visuals (REAL LOOK)
+if (data.type === 'slideState') {
+  const currentSlide = Number(data.slideNumber) || 1;
 
-                if (overlaySlide) {
-                    overlaySlide.textContent = `Slide ${currentSlide}`;
-                }
+  function getSlideContent(num) {
+    const slides = [
+      {
+        title: "Welcome",
+        body: "This is your presentation remote.\nControl slides from your phone."
+      },
+      {
+        title: "Overview",
+        body: "• Remote control\n• Live preview\n• Notes panel"
+      },
+      {
+        title: "Features",
+        body: "• Multi-device sync\n• Presenter view\n• Real-time updates"
+      },
+      {
+        title: "Next Steps",
+        body: "• Real slide preview\n• Notes sync\n• UI polish"
+      }
+    ];
 
-                if (overlayNextSlide) {
-                    overlayNextSlide.textContent = `Slide ${currentSlide + 1}`;
-                }
-            }
+    return slides[(num - 1) % slides.length];
+  }
+
+  const current = getSlideContent(currentSlide);
+  const next = getSlideContent(currentSlide + 1);
+
+  if (overlaySlide) {
+    overlaySlide.innerHTML = `
+      <div class="slide-inner">
+        <div class="slide-title">${current.title}</div>
+        <div class="slide-body">${current.body.replace(/\n/g, "<br>")}</div>
+      </div>
+    `;
+  }
+
+  if (overlayNextSlide) {
+    overlayNextSlide.innerHTML = `
+      <div class="slide-inner small">
+        <div class="slide-title small">${next.title}</div>
+      </div>
+    `;
+  }
+}
 
             // Room presence updates
             if (data.type === 'roomState') {
