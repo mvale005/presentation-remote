@@ -267,18 +267,6 @@ button:disabled {
   justify-content: center;
 }
 
-.overlay-inner {
-  position: relative;
-  width: min(1400px, 100%);
-  height: min(85vh, 900px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  margin: auto;
-}
 
 .overlay-panels {
   width: 100%;
@@ -494,11 +482,6 @@ button:disabled {
 /* =========================
    MOBILE
 ========================= */
-@media (max-width: 980px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-}
 
 @media (max-width: 760px) {
   body {
@@ -563,82 +546,44 @@ button:disabled {
   }
 }
 
-@media (orientation: landscape) and (max-width: 900px) {
-  body {
-    padding: 24px;
-  }
-
-  .app {
-    display: grid;
-    gap: 14px;
-  }
-
-  .hero {
-    order: 0;
-  }
-
-  .controls {
-    order: 0;
-  }
-
-  .grid {
-    order: 0;
-    grid-template-columns: 1.1fr 0.95fr 0.95fr;
-  }
-
-  .row {
-    flex-direction: row;
-  }
-
-  .row button {
-    width: auto;
-  }
-
-  .big-buttons {
-    flex-direction: row;
-  }
-
-  .big-buttons button {
-    width: auto;
-  }
-
-  .hero-meta {
-    width: auto;
-    justify-content: flex-end;
-  }
-}
 
 @media (orientation: landscape) and (max-width: 900px) {
   .overlay {
     padding: 6px;
   }
 
-  .overlay-inner {
-    width: min(96vw, 1400px);
-    height: min(78vh, 720px); /* 👈 smaller overall height */
-    align-items: center;
-    justify-content: center;
-  }
+ .overlay-inner {
+  position: relative;
+  width: min(98vw, 1600px);
+  height: min(86vh, 860px);
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.02);
+}
 
   .overlay-panels {
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-columns: 1.4fr 1fr; /* 👈 slightly reduce left dominance */
+    grid-template-columns: 1.7fr 1fr; /* 👈 slightly reduce left dominance */
     grid-template-rows: repeat(2, minmax(0, 1fr));
-    gap: 10px; /* 👈 tighter spacing */
+    gap: 14px; /* 👈 tighter spacing */
   }
 
   .overlay-current {
     grid-column: 1;
     grid-row: 1 / span 2;
-    padding: 14px;
+    padding: 18px;
   }
 
   .overlay-side {
     display: grid;
     grid-template-rows: 1fr 1fr;
-    gap: 10px;
+    gap: 14px;
   }
 
   .overlay-next-card,
@@ -647,7 +592,7 @@ button:disabled {
   }
 
   .overlay-slide {
-    font-size: clamp(2.2rem, 5vw, 4rem);
+    font-size: clamp(2.8rem, 6vw, 5rem);
   }
 
   .overlay-next-slide {
