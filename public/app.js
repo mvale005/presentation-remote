@@ -242,25 +242,20 @@ if (data.type === 'slideState') {
     return slides[(num - 1) % slides.length];
   }
 
-  const current = getSlideContent(currentSlide);
-  const next = getSlideContent(currentSlide + 1);
+if (overlaySlide) {
+  overlaySlide.innerHTML = `
+    <img src="/slides/slide${currentSlide}.png" class="slide-img" />
+  `;
+}
 
-  if (overlaySlide) {
-    overlaySlide.innerHTML = `
-      <div class="slide-inner">
-        <div class="slide-title">${current.title}</div>
-        <div class="slide-body">${current.body.replace(/\n/g, "<br>")}</div>
-      </div>
-    `;
-  }
+if (overlayNextSlide) {
+  overlayNextSlide.innerHTML = `
+    <img src="/slides/slide${currentSlide + 1}.png" class="slide-img small" />
+  `;
+}
 
-  if (overlayNextSlide) {
-    overlayNextSlide.innerHTML = `
-      <div class="slide-inner small">
-        <div class="slide-title small">${next.title}</div>
-      </div>
-    `;
-  }
+
+
 }
 
             // Room presence updates

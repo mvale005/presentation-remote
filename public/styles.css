@@ -344,6 +344,17 @@ button:disabled {
   text-align: center;
 }
 
+.slide-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.slide-img.small {
+  opacity: 0.9;
+}
+
 /* SLIDE FRAME (visual preview) */
 .slide-frame {
   width: 100%;
