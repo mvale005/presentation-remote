@@ -334,6 +334,30 @@ button:disabled {
   place-items: center;
 }
 
+.overlay-side {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Notes panel */
+.overlay-notes {
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.02);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.overlay-notes-text {
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
 /* TEXT SIZES */
 .overlay-slide {
   font-size: clamp(3rem, 8vw, 6rem);

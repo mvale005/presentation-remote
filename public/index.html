@@ -130,17 +130,38 @@
   <div class="overlay-inner">
   <button id="overlayPrev" class="overlay-arrow overlay-prev" aria-label="Previous slide">←</button>
 
-  <div class="overlay-panels">
-    <div class="overlay-current">
+<div class="overlay-panels">
+
+  <!-- LEFT: CURRENT SLIDE -->
+  <div class="overlay-current">
+    <div>
       <div class="overlay-label">Current slide</div>
       <div id="overlaySlide" class="overlay-slide">Slide 1</div>
     </div>
-
-    <div class="overlay-next-card">
-      <div class="overlay-label">Next slide preview</div>
-      <div id="overlayNextSlide" class="overlay-next-slide">Slide 2</div>
-    </div>
   </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="overlay-side">
+
+    <!-- TOP RIGHT: NEXT SLIDE -->
+    <div class="overlay-next-card">
+      <div>
+        <div class="overlay-label">Next slide</div>
+        <div id="overlayNextSlide" class="overlay-next-slide">Slide 2</div>
+      </div>
+    </div>
+
+    <!-- BOTTOM RIGHT: NOTES -->
+    <div class="overlay-notes">
+      <div class="overlay-label">Notes</div>
+      <div id="overlayNotes" class="overlay-notes-text">
+        No notes yet
+      </div>
+    </div>
+
+  </div>
+
+</div>
 
   <button id="overlayNext" class="overlay-arrow overlay-next" aria-label="Next slide">→</button>
 </div>
