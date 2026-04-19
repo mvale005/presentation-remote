@@ -284,7 +284,7 @@ button:disabled {
   grid-template-columns: 2fr 1fr;
   grid-template-rows: 1fr 1fr;
   gap: 18px;
-  align-items: stretch;
+  align-self: center;
 }
 
 /* Current slide on the left, spanning both rows */
