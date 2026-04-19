@@ -267,6 +267,15 @@ button:disabled {
   justify-content: center;
 }
 
+.overlay-inner {
+  width: min(96vw, 1400px);
+  height: min(82vh, 760px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 
 .overlay-panels {
   width: 100%;
@@ -351,6 +360,10 @@ button:disabled {
   place-items: center;
   z-index: 1001;
 }
+.overlay-arrow:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
 
 .overlay-prev {
   left: 12px;
@@ -394,94 +407,16 @@ button:disabled {
   }
 }
 
-/* MAIN SLIDE (left) */
-.overlay-current {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  display: grid;
-  place-items: center;
-  border-radius: 22px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.12);
-}
 
-/* NEXT SLIDE (top right) */
-.overlay-next-card {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  align-self: start;
-  justify-self: end;
-  border-radius: 18px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.10);
-  display: grid;
-  place-items: center;
-}
-
-.overlay-side {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  gap: 16px;
-  width: 100%;
-}
-
-/* Notes panel */
-.overlay-notes {
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.02);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-}
-
-.overlay-notes-text {
-  font-size: 0.95rem;
-  color: var(--text);
-  line-height: 1.4;
-  opacity: 0.9;
-}
-
-/* TEXT SIZES */
-.overlay-slide {
-  font-size: clamp(3rem, 8vw, 6rem);
-  font-weight: 800;
-}
-
-.overlay-next-slide {
-  font-size: clamp(1.2rem, 3vw, 2rem);
-  color: var(--muted);
-}
-
-.overlay-next-slide {
-  font-size: clamp(1.5rem, 4vw, 2.4rem);
-  font-weight: 700;
-  color: var(--muted);
-}
-
-.overlay-arrow:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.overlay-prev {
-  left: 12px;
-}
-
-.overlay-next {
-  right: 12px;
-}
-
-.overlay-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 1001;
-}
 
 /* =========================
    MOBILE
 ========================= */
+@media (max-width: 980px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 @media (max-width: 760px) {
   body {
@@ -546,44 +481,39 @@ button:disabled {
   }
 }
 
-
 @media (orientation: landscape) and (max-width: 900px) {
   .overlay {
-    padding: 6px;
+    padding: 8px;
   }
 
- .overlay-inner {
-  position: relative;
-  width: min(98vw, 1600px);
-  height: min(86vh, 860px);
+  .overlay-inner {
+    width: min(96vw, 1400px);
+    height: min(82vh, 760px);
 
-  display: grid;
-  place-items: center;
-
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.02);
-}
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
   .overlay-panels {
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-columns: 1.7fr 1fr; /* 👈 slightly reduce left dominance */
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-    gap: 14px; /* 👈 tighter spacing */
+    grid-template-columns: 1.6fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 12px;
   }
 
   .overlay-current {
     grid-column: 1;
     grid-row: 1 / span 2;
-    padding: 18px;
+    padding: 16px;
   }
 
   .overlay-side {
     display: grid;
     grid-template-rows: 1fr 1fr;
-    gap: 14px;
+    gap: 12px;
   }
 
   .overlay-next-card,
@@ -592,14 +522,6 @@ button:disabled {
   }
 
   .overlay-slide {
-    font-size: clamp(2.8rem, 6vw, 5rem);
-  }
-
-  .overlay-next-slide {
-    font-size: clamp(1rem, 2vw, 1.4rem);
-  }
-
-  .overlay-notes-text {
-    font-size: 0.85rem;
+    font-size: clamp(2.4rem, 5vw, 4.5rem);
   }
 }
