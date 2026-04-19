@@ -610,64 +610,51 @@ button:disabled {
 
 @media (orientation: landscape) and (max-width: 900px) {
   .overlay {
-    padding: 10px;
+    padding: 6px;
   }
 
   .overlay-inner {
     width: min(96vw, 1400px);
-    height: min(88vh, 820px);
+    height: min(78vh, 720px); /* 👈 smaller overall height */
     align-items: center;
     justify-content: center;
-    overflow: hidden;
   }
 
   .overlay-panels {
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-columns: 1.6fr 1fr;
+    grid-template-columns: 1.4fr 1fr; /* 👈 slightly reduce left dominance */
     grid-template-rows: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-    align-items: stretch;
+    gap: 10px; /* 👈 tighter spacing */
   }
 
   .overlay-current {
     grid-column: 1;
     grid-row: 1 / span 2;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: auto;
-    min-height: 0;
-    padding: 18px;
+    padding: 14px;
   }
 
   .overlay-side {
-    grid-column: 2;
-    grid-row: 1 / span 2;
     display: grid;
     grid-template-rows: 1fr 1fr;
-    gap: 14px;
-    min-height: 0;
+    gap: 10px;
   }
 
   .overlay-next-card,
   .overlay-notes {
-    width: 100%;
-    height: 100%;
-    aspect-ratio: auto;
-    min-height: 0;
-    padding: 14px;
+    padding: 12px;
   }
 
   .overlay-slide {
-    font-size: clamp(2.6rem, 6vw, 4.8rem);
+    font-size: clamp(2.2rem, 5vw, 4rem);
   }
 
   .overlay-next-slide {
-    font-size: clamp(1.1rem, 2.5vw, 1.8rem);
+    font-size: clamp(1rem, 2vw, 1.4rem);
   }
 
   .overlay-notes-text {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 }
