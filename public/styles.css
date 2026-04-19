@@ -302,15 +302,18 @@ button:disabled {
 }
 
 .overlay-panels {
-  width: min(900px, 100%);
+  width: 100%;
+  height: 100%;
   display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr;
   gap: 18px;
-  place-items: center;
+  align-items: stretch;
 }
 
 .overlay-current {
   width: 100%;
-  min-height: 55vh;
+  height: 100%;
   display: grid;
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -320,7 +323,10 @@ button:disabled {
 }
 
 .overlay-next-card {
-  width: min(420px, 92%);
+  align-self: start;
+  justify-self: end;
+  width: 100%;
+  max-width: 320px;
   padding: 16px 18px;
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.10);
