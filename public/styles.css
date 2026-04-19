@@ -562,3 +562,48 @@ button:disabled {
     font-size: 1.8rem;
   }
 }
+
+@media (orientation: landscape) and (max-width: 900px) {
+  body {
+    padding: 24px;
+  }
+
+  .app {
+    display: grid;
+    gap: 14px;
+  }
+
+  .hero {
+    order: 0;
+  }
+
+  .controls {
+    order: 0;
+  }
+
+  .grid {
+    order: 0;
+    grid-template-columns: 1.1fr 0.95fr 0.95fr;
+  }
+
+  .row {
+    flex-direction: row;
+  }
+
+  .row button {
+    width: auto;
+  }
+
+  .big-buttons {
+    flex-direction: row;
+  }
+
+  .big-buttons button {
+    width: auto;
+  }
+
+  .hero-meta {
+    width: auto;
+    justify-content: flex-end;
+  }
+}
