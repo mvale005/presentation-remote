@@ -607,3 +607,47 @@ button:disabled {
     justify-content: flex-end;
   }
 }
+
+@media (orientation: landscape) and (max-width: 900px) {
+  .overlay {
+    padding: 18px;
+  }
+
+  .overlay-inner {
+    width: min(1400px, 100%);
+    height: min(85vh, 900px);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .overlay-panels {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 18px;
+    align-items: stretch;
+  }
+
+  .overlay-current {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+  }
+
+  .overlay-side {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .overlay-next-card,
+  .overlay-notes {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+  }
+}
