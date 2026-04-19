@@ -127,18 +127,23 @@
     <!-- Close overlay button -->
     <button id="closeOverlay" class="ghost overlay-close">Close</button>
 
-    <div class="overlay-inner">
+  <div class="overlay-inner">
+  <button id="overlayPrev" class="overlay-arrow overlay-prev" aria-label="Previous slide">←</button>
 
-      <!-- Previous arrow (overlay mode) -->
-      <button id="overlayPrev" class="overlay-arrow overlay-prev" aria-label="Previous slide">←</button>
-
-      <!-- Current slide display -->
+  <div class="overlay-panels">
+    <div class="overlay-current">
+      <div class="overlay-label">Current slide</div>
       <div id="overlaySlide" class="overlay-slide">Slide 1</div>
-
-      <!-- Next arrow (overlay mode) -->
-      <button id="overlayNext" class="overlay-arrow overlay-next" aria-label="Next slide">→</button>
-
     </div>
+
+    <div class="overlay-next-card">
+      <div class="overlay-label">Next slide preview</div>
+      <div id="overlayNextSlide" class="overlay-next-slide">Slide 2</div>
+    </div>
+  </div>
+
+  <button id="overlayNext" class="overlay-arrow overlay-next" aria-label="Next slide">→</button>
+</div>
   </div>
 
   <!-- Main application logic -->

@@ -24,6 +24,7 @@ const overlaySlide = document.getElementById('overlaySlide');
 const closeOverlay = document.getElementById('closeOverlay');
 const overlayPrev = document.getElementById('overlayPrev');
 const overlayNext = document.getElementById('overlayNext');
+const overlayNextSlide = document.getElementById('overlayNextSlide');
 
 // -----------------------------
 // App state
@@ -50,355 +51,361 @@ const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${win
 // UI helpers
 // -----------------------------
 function addLog(message) {
-  const item = document.createElement('li');
-  item.textContent = message;
-  activityLog.prepend(item);
+    const item = document.createElement('li');
+    item.textContent = message;
+    activityLog.prepend(item);
 
-  // Keep the feed short and readable
-  if (activityLog.children.length > 6) {
-    activityLog.removeChild(activityLog.lastElementChild);
-  }
+    // Keep the feed short and readable
+    if (activityLog.children.length > 6) {
+        activityLog.removeChild(activityLog.lastElementChild);
+    }
 }
 
 function renderUsers(users) {
-  userList.innerHTML = '';
+    userList.innerHTML = '';
 
-  if (!users || users.length === 0) {
-    const empty = document.createElement('li');
-    empty.textContent = 'No one has joined yet.';
-    userList.appendChild(empty);
-    return;
-  }
+    if (!users || users.length === 0) {
+        const empty = document.createElement('li');
+        empty.textContent = 'No one has joined yet.';
+        userList.appendChild(empty);
+        return;
+    }
 
-  users.forEach((user) => {
-    const item = document.createElement('li');
-    item.textContent = user;
-    userList.appendChild(item);
-  });
+    users.forEach((user) => {
+        const item = document.createElement('li');
+        item.textContent = user;
+        userList.appendChild(item);
+    });
 }
 
 function setOverlayVisible(isVisible) {
-  overlayVisible = isVisible;
+    overlayVisible = isVisible;
 
-  if (slideOverlay) {
-    slideOverlay.style.display = isVisible ? 'flex' : 'none';
-    slideOverlay.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
-  }
+    if (slideOverlay) {
+        slideOverlay.style.display = isVisible ? 'flex' : 'none';
+        slideOverlay.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
+    }
 }
 
 function setHostPresence(users) {
-  const hasHost = Array.isArray(users) && users.includes('Windows Host');
+    const hasHost = Array.isArray(users) && users.includes('Windows Host');
 
-  hostStatusBar.classList.remove('connected', 'warm');
-  hostStatusDot.classList.remove('connected');
+    hostStatusBar.classList.remove('connected', 'warm');
+    hostStatusDot.classList.remove('connected');
 
-  if (hasHost) {
-    hostStatusBar.classList.add('connected');
-    hostStatusDot.classList.add('connected');
-    hostStatusText.textContent = 'Host connected';
-    prevBtn.disabled = false;
-    nextBtn.disabled = false;
+    if (hasHost) {
+        hostStatusBar.classList.add('connected');
+        hostStatusDot.classList.add('connected');
+        hostStatusText.textContent = 'Host connected';
+        prevBtn.disabled = false;
+        nextBtn.disabled = false;
 
-    if (hostHint) hostHint.textContent = 'Ready to control slides';
-  } else {
-    hostStatusBar.classList.add('warm');
-    hostStatusText.textContent = 'Host not connected';
-    prevBtn.disabled = true;
-    nextBtn.disabled = true;
+        if (hostHint) hostHint.textContent = 'Ready to control slides';
+    } else {
+        hostStatusBar.classList.add('warm');
+        hostStatusText.textContent = 'Host not connected';
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
 
-    if (hostHint) hostHint.textContent = 'Waiting for host to connect...';
-  }
+        if (hostHint) hostHint.textContent = 'Waiting for host to connect...';
+    }
 }
 
 function setConnectedState(isConnected, room = '') {
-  statusBar.classList.remove('connected', 'warm');
+    statusBar.classList.remove('connected', 'warm');
 
-  if (isConnected) {
-    statusBar.classList.add('connected');
-    statusDot.classList.add('connected');
-  } else {
-    statusDot.classList.remove('connected');
-    if (room) {
-      statusBar.classList.add('warm');
+    if (isConnected) {
+        statusBar.classList.add('connected');
+        statusDot.classList.add('connected');
+    } else {
+        statusDot.classList.remove('connected');
+        if (room) {
+            statusBar.classList.add('warm');
+        }
     }
-  }
 
-  statusText.textContent = isConnected
-    ? `Connected to room ${room} as ${currentName}`
-    : (currentRoom ? `Disconnected from room ${currentRoom}` : 'Not connected');
+    statusText.textContent = isConnected
+        ? `Connected to room ${room} as ${currentName}`
+        : (currentRoom ? `Disconnected from room ${currentRoom}` : 'Not connected');
 
-  leaveBtn.disabled = !isConnected && !currentRoom;
-  joinBtn.disabled = isConnected;
-  reconnectBtn.disabled = isConnected || !currentRoom || !currentName;
-  nameInput.disabled = isConnected;
-  roomCodeInput.disabled = isConnected;
+    leaveBtn.disabled = !isConnected && !currentRoom;
+    joinBtn.disabled = isConnected;
+    reconnectBtn.disabled = isConnected || !currentRoom || !currentName;
+    nameInput.disabled = isConnected;
+    roomCodeInput.disabled = isConnected;
 }
 
 function getName() {
-  return nameInput.value.trim() || 'Anonymous';
+    return nameInput.value.trim() || 'Anonymous';
 }
 
 function clearReconnectTimer() {
-  if (reconnectTimer) {
-    clearTimeout(reconnectTimer);
-    reconnectTimer = null;
-  }
+    if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+    }
 }
 
 function scheduleReconnect() {
-  if (!shouldReconnect || !currentRoom || !currentName) return;
-  if (reconnectTimer) return;
+    if (!shouldReconnect || !currentRoom || !currentName) return;
+    if (reconnectTimer) return;
 
-  const delay = Math.min(
-    RECONNECT_BASE_DELAY * Math.max(1, reconnectAttempts + 1),
-    RECONNECT_MAX_DELAY
-  );
+    const delay = Math.min(
+        RECONNECT_BASE_DELAY * Math.max(1, reconnectAttempts + 1),
+        RECONNECT_MAX_DELAY
+    );
 
-  reconnectAttempts += 1;
-  addLog(`Reconnecting in ${Math.round(delay / 1000)} seconds...`);
+    reconnectAttempts += 1;
+    addLog(`Reconnecting in ${Math.round(delay / 1000)} seconds...`);
 
-  reconnectTimer = setTimeout(() => {
-    reconnectTimer = null;
+    reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
 
-    if (document.visibilityState === 'visible') {
-      connectSocket();
-    } else {
-      scheduleReconnect();
-    }
-  }, delay);
+        if (document.visibilityState === 'visible') {
+            connectSocket();
+        } else {
+            scheduleReconnect();
+        }
+    }, delay);
 }
 
 // -----------------------------
 // WebSocket connection
 // -----------------------------
 function connectSocket() {
-  const room = roomCodeInput.value.trim().toUpperCase() || currentRoom;
-  const name = nameInput.value.trim() || currentName || 'Anonymous';
+    const room = roomCodeInput.value.trim().toUpperCase() || currentRoom;
+    const name = nameInput.value.trim() || currentName || 'Anonymous';
 
-  if (!room) {
-    addLog('Enter a room code first.');
-    roomCodeInput.focus();
-    return;
-  }
-
-  currentRoom = room;
-  currentName = name;
-  shouldReconnect = true;
-  clearReconnectTimer();
-
-  // Close any existing socket before opening a new one
-  if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
-    try {
-      socket.close();
-    } catch (err) {
-      // ignore close errors
+    if (!room) {
+        addLog('Enter a room code first.');
+        roomCodeInput.focus();
+        return;
     }
-  }
 
-  socket = new WebSocket(WS_URL);
+    currentRoom = room;
+    currentName = name;
+    shouldReconnect = true;
+    clearReconnectTimer();
 
-  socket.onopen = () => {
-    reconnectAttempts = 0;
-    setConnectedState(true, currentRoom);
-    addLog(`Connected to room ${currentRoom} as ${currentName}.`);
-
-    socket.send(JSON.stringify({
-      type: 'join',
-      room: currentRoom,
-      username: currentName
-    }));
-  };
-
-  socket.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-
-      // Slide preview / overlay text
-      if (data.type === 'slideState') {
-        if (overlaySlide) {
-          overlaySlide.textContent = `Slide ${data.slideNumber}`;
+    // Close any existing socket before opening a new one
+    if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+        try {
+            socket.close();
+        } catch (err) {
+            // ignore close errors
         }
-      }
+    }
 
-      // Room presence updates
-      if (data.type === 'roomState') {
-        const users = data.users || [];
-        renderUsers(users);
-        setHostPresence(users);
-      }
+    socket = new WebSocket(WS_URL);
 
-      // Log slide actions
-      if (data.type === 'slide') {
-        const who = data.username ? data.username : 'Someone';
-        const actionLabel = String(data.action || '').trim();
-        const isMe = who === currentName;
+    socket.onopen = () => {
+        reconnectAttempts = 0;
+        setConnectedState(true, currentRoom);
+        addLog(`Connected to room ${currentRoom} as ${currentName}.`);
 
-        addLog(`${isMe ? 'You' : who} → ${actionLabel}`);
+        socket.send(JSON.stringify({
+            type: 'join',
+            room: currentRoom,
+            username: currentName
+        }));
+    };
 
-        if (lastAction) {
-          lastAction.textContent = `Last action: ${isMe ? 'You' : who} → ${actionLabel}`;
+    socket.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+
+            // Slide preview / overlay text
+            if (data.type === 'slideState') {
+                const currentSlide = Number(data.slideNumber) || 1;
+
+                if (overlaySlide) {
+                    overlaySlide.textContent = `Slide ${currentSlide}`;
+                }
+
+                if (overlayNextSlide) {
+                    overlayNextSlide.textContent = `Slide ${currentSlide + 1}`;
+                }
+            }
+
+            // Room presence updates
+            if (data.type === 'roomState') {
+                const users = data.users || [];
+                renderUsers(users);
+                setHostPresence(users);
+            }
+
+            // Log slide actions
+            if (data.type === 'slide') {
+                const who = data.username ? data.username : 'Someone';
+                const actionLabel = String(data.action || '').trim();
+                const isMe = who === currentName;
+
+                addLog(`${isMe ? 'You' : who} → ${actionLabel}`);
+
+                if (lastAction) {
+                    lastAction.textContent = `Last action: ${isMe ? 'You' : who} → ${actionLabel}`;
+                }
+            }
+        } catch (err) {
+            console.warn('Bad message from server:', err);
         }
-      }
-    } catch (err) {
-      console.warn('Bad message from server:', err);
-    }
-  };
+    };
 
-  socket.onclose = () => {
-    socket = null;
-    setConnectedState(false, currentRoom);
-    addLog('Disconnected.');
+    socket.onclose = () => {
+        socket = null;
+        setConnectedState(false, currentRoom);
+        addLog('Disconnected.');
 
-    if (shouldReconnect && currentRoom && currentName) {
-      scheduleReconnect();
-    }
-  };
+        if (shouldReconnect && currentRoom && currentName) {
+            scheduleReconnect();
+        }
+    };
 
-  socket.onerror = () => {
-    addLog('Connection error.');
-  };
+    socket.onerror = () => {
+        addLog('Connection error.');
+    };
 }
 
 // -----------------------------
 // Slide controls
 // -----------------------------
 function sendSlideAction(action) {
-  const now = Date.now();
+    const now = Date.now();
 
-  // Prevent accidental double-click spam
-  if (now - lastClickTime < CLICK_DELAY) {
-    addLog('Slow down a bit...');
-    return;
-  }
+    // Prevent accidental double-click spam
+    if (now - lastClickTime < CLICK_DELAY) {
+        addLog('Slow down a bit...');
+        return;
+    }
 
-  lastClickTime = now;
+    lastClickTime = now;
 
-  if (!socket || socket.readyState !== WebSocket.OPEN) {
-    addLog('Join a room before using slide controls.');
-    return;
-  }
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        addLog('Join a room before using slide controls.');
+        return;
+    }
 
-  socket.send(JSON.stringify({
-    type: 'slide',
-    action,
-    username: currentName
-  }));
+    socket.send(JSON.stringify({
+        type: 'slide',
+        action,
+        username: currentName
+    }));
 
-  // Small button flash for feedback
-  const btn = action === 'Next' ? nextBtn : prevBtn;
-  if (btn) {
-    btn.classList.remove('click-flash');
-    void btn.offsetWidth; // force reflow so animation replays
-    btn.classList.add('click-flash');
-  }
+    // Small button flash for feedback
+    const btn = action === 'Next' ? nextBtn : prevBtn;
+    if (btn) {
+        btn.classList.remove('click-flash');
+        void btn.offsetWidth; // force reflow so animation replays
+        btn.classList.add('click-flash');
+    }
 }
 
 // -----------------------------
 // Event listeners
 // -----------------------------
 joinBtn.addEventListener('click', () => {
-  const room = roomCodeInput.value.trim().toUpperCase();
-  const name = getName();
+    const room = roomCodeInput.value.trim().toUpperCase();
+    const name = getName();
 
-  if (!room) {
-    addLog('Enter a room code first.');
-    roomCodeInput.focus();
-    return;
-  }
+    if (!room) {
+        addLog('Enter a room code first.');
+        roomCodeInput.focus();
+        return;
+    }
 
-  currentRoom = room;
-  currentName = name;
-  shouldReconnect = true;
-  connectSocket();
+    currentRoom = room;
+    currentName = name;
+    shouldReconnect = true;
+    connectSocket();
 });
 
 reconnectBtn.addEventListener('click', () => {
-  if (!currentRoom) {
-    addLog('Join a room first.');
-    return;
-  }
+    if (!currentRoom) {
+        addLog('Join a room first.');
+        return;
+    }
 
-  shouldReconnect = true;
-  connectSocket();
+    shouldReconnect = true;
+    connectSocket();
 });
 
 leaveBtn.addEventListener('click', () => {
-  shouldReconnect = false;
-  clearReconnectTimer();
+    shouldReconnect = false;
+    clearReconnectTimer();
 
-  if (socket) {
-    try {
-      socket.close();
-    } catch (err) {
-      // ignore
+    if (socket) {
+        try {
+            socket.close();
+        } catch (err) {
+            // ignore
+        }
     }
-  }
 
-  socket = null;
-  roomCodeInput.value = '';
-  currentRoom = '';
-  currentName = '';
-  setConnectedState(false, '');
-  renderUsers([]);
-  addLog('Left room.');
+    socket = null;
+    roomCodeInput.value = '';
+    currentRoom = '';
+    currentName = '';
+    setConnectedState(false, '');
+    renderUsers([]);
+    addLog('Left room.');
 });
 
 prevBtn.addEventListener('click', () => sendSlideAction('Previous'));
 nextBtn.addEventListener('click', () => sendSlideAction('Next'));
 
 if (viewSlidesBtn) {
-  viewSlidesBtn.addEventListener('click', () => {
-    setOverlayVisible(!overlayVisible);
-  });
+    viewSlidesBtn.addEventListener('click', () => {
+        setOverlayVisible(!overlayVisible);
+    });
 }
 
 if (closeOverlay) {
-  closeOverlay.addEventListener('click', () => setOverlayVisible(false));
+    closeOverlay.addEventListener('click', () => setOverlayVisible(false));
 }
 
 if (overlayPrev) {
-  overlayPrev.addEventListener('click', () => sendSlideAction('Previous'));
+    overlayPrev.addEventListener('click', () => sendSlideAction('Previous'));
 }
 
 if (overlayNext) {
-  overlayNext.addEventListener('click', () => sendSlideAction('Next'));
+    overlayNext.addEventListener('click', () => sendSlideAction('Next'));
 }
 
 roomCodeInput.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') joinBtn.click();
+    if (event.key === 'Enter') joinBtn.click();
 });
 
 nameInput.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') joinBtn.click();
+    if (event.key === 'Enter') joinBtn.click();
 });
 
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && overlayVisible) {
-    setOverlayVisible(false);
-  }
+    if (event.key === 'Escape' && overlayVisible) {
+        setOverlayVisible(false);
+    }
 });
 
 // Heartbeat keeps the socket warm
 setInterval(() => {
-  if (socket && socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify({ type: 'ping', source: 'client' }));
-  }
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'ping', source: 'client' }));
+    }
 }, HEARTBEAT_MS);
 
 // Reconnect if the page comes back into focus
 function attemptResumeConnection() {
-  if (!shouldReconnect || !currentRoom || !currentName) return;
+    if (!shouldReconnect || !currentRoom || !currentName) return;
 
-  if (!socket || socket.readyState !== WebSocket.OPEN) {
-    clearReconnectTimer();
-    connectSocket();
-  }
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        clearReconnectTimer();
+        connectSocket();
+    }
 }
 
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') {
-    attemptResumeConnection();
-  }
+    if (document.visibilityState === 'visible') {
+        attemptResumeConnection();
+    }
 });
 
 window.addEventListener('focus', attemptResumeConnection);

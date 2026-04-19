@@ -301,6 +301,52 @@ button:disabled {
   place-items: center;
 }
 
+.overlay-panels {
+  width: min(900px, 100%);
+  display: grid;
+  gap: 18px;
+  place-items: center;
+}
+
+.overlay-current {
+  width: 100%;
+  min-height: 55vh;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 24px;
+}
+
+.overlay-next-card {
+  width: min(420px, 92%);
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.02);
+  text-align: center;
+}
+
+.overlay-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.overlay-slide {
+  font-size: clamp(3rem, 10vw, 7rem);
+  font-weight: 800;
+}
+
+.overlay-next-slide {
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  font-weight: 700;
+  color: var(--muted);
+}
+
 .overlay-arrow:hover {
   opacity: 1;
   background: rgba(255, 255, 255, 0.1);
