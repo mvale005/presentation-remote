@@ -1,44 +1,68 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
+  <!-- PWA manifest (for installable app) -->
+
   <link rel="manifest" href="/manifest.json" />
+  <!-- Theme color for mobile app UI -->
+
   <meta name="theme-color" content="#08111f" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Presentation Remote</title>
+
+  <!-- Main stylesheet -->
+
   <link rel="stylesheet" href="/styles.css" />
 </head>
+
 <body>
+
+  <!-- Main app container -->
+
   <main class="app">
+    <!-- Header / title section -->
     <section class="hero">
       <div>
         <h1>Presentation Remote</h1>
       </div>
     </section>
 
+    <!-- Main grid: join + activity + users -->
+
     <section class="grid">
+      <!-- Join room card -->
       <div class="card">
         <div class="card-header">
           <h2>Join a room</h2>
           <span class="mini-label">Controllers</span>
         </div>
-
+        <!-- User name input -->
         <label for="nameInput">Your name</label>
         <input id="nameInput" type="text" placeholder="Name " maxlength="32" />
-
+        <!-- Room code input -->
         <label for="roomCode">Room code</label>
         <input id="roomCode" type="text" value="ROOM1" placeholder="Example: ROOM1" maxlength="24" />
+        <!-- Join / leave / reconnect controls -->
 
         <div class="row">
+
           <button class="primary" id="joinBtn">Join room</button>
           <button class="ghost" id="leaveBtn" disabled>Leave</button>
           <button class="ghost" id="reconnectBtn" disabled>Reconnect</button>
         </div>
 
+        <!-- Connection status -->
+
         <div class="status" id="statusBar" aria-live="polite">
           <span class="dot" id="statusDot"></span>
           <span id="statusText">Not connected</span>
         </div>
+
+        <!-- Host presence status -->
 
         <div class="status" id="hostStatusBar" aria-live="polite">
           <span class="dot" id="hostStatusDot"></span>
@@ -46,11 +70,15 @@
         </div>
       </div>
 
+      <!-- Activity log -->
+
       <div class="card">
         <div class="card-header">
           <h2>Activity</h2>
           <span class="mini-label">Live feed</span>
         </div>
+
+        <!-- List of recent actions -->
         <div class="activity-wrap">
           <ul class="log" id="activityLog">
             <li>Waiting for someone to join a room.</li>
@@ -58,41 +86,61 @@
         </div>
       </div>
 
+      <!-- Users in room -->
+
       <div class="card">
         <div class="card-header">
           <h2>Users in room</h2>
           <span class="mini-label">Presence</span>
         </div>
+
+        <!-- Dynamic user list -->
+
         <ul class="user-list" id="userList">
           <li>No one has joined yet.</li>
         </ul>
       </div>
     </section>
+    <!-- Slide control section -->
 
     <section class="card controls">
       <div class="card-header">
         <h2>Slide controls</h2>
         <span class="mini-label">Remote input</span>
       </div>
+      <!-- Toggle slide preview overlay -->
       <button class="ghost" id="viewSlidesBtn">View Slides</button>
+      <!-- Previous / Next buttons -->
       <div class="big-buttons">
         <button class="prev" id="prevBtn" disabled>Previous</button>
         <button class="next" id="nextBtn" disabled>Next</button>
       </div>
+      <!-- Helper text when host is missing -->
+
       <p id="hostHint" class="footer-note">Waiting for host to connect...</p>
+      <!-- Last action display -->
       <p id="lastAction" class="footer-note">Last action: none</p>
     </section>
   </main>
+  <!-- Fullscreen slide preview overlay -->
 
   <div id="slideOverlay" class="overlay" aria-hidden="true">
+    <!-- Close overlay button -->
     <button id="closeOverlay" class="ghost overlay-close">Close</button>
     <div class="overlay-inner">
+      <!-- Previous arrow (overlay mode) -->
       <button id="overlayPrev" class="overlay-arrow overlay-prev" aria-label="Previous slide">←</button>
+      <!-- Current slide display -->
+
       <div id="overlaySlide" class="overlay-slide">Slide 1</div>
+      <!-- Next arrow (overlay mode) -->
+
       <button id="overlayNext" class="overlay-arrow overlay-next" aria-label="Next slide">→</button>
     </div>
   </div>
 
+  <!-- Main application logic -->
   <script src="/app.js"></script>
 </body>
+
 </html>
