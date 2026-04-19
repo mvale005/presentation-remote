@@ -270,7 +270,7 @@ button:disabled {
   width: 100%;
   height: 100%;
   display: flex;
-  align-items: center;
+  align-items: center;   /* vertical centering */
   justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
@@ -278,13 +278,95 @@ button:disabled {
   overflow: hidden;
 }
 
+.overlay-panels {
+  width: min(1200px, 100%);
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 18px;
+  align-items: stretch;
+}
+
+/* Current slide on the left, spanning both rows */
+.overlay-current {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 24px;
+}
+
+/* Right side column containing next slide and notes */
+.overlay-side {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 18px;
+  align-self: center;
+}
+
+/* Next slide preview in the top-right */
+.overlay-next-card {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+/* Notes panel in the bottom-right */
+.overlay-notes {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* Text styling */
+.overlay-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
 .overlay-slide {
-  font-size: clamp(2.4rem, 8vw, 5rem);
-  font-weight: 700;
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--text);
 }
 
+.overlay-next-slide {
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.overlay-notes-text {
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+/* Arrows / close button unchanged */
 .overlay-arrow {
   position: absolute;
   top: 50%;
@@ -299,6 +381,55 @@ button:disabled {
   opacity: 0.65;
   display: grid;
   place-items: center;
+  z-index: 1001;
+}
+
+.overlay-arrow:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.overlay-prev {
+  left: 12px;
+}
+
+.overlay-next {
+  right: 12px;
+}
+
+.overlay-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1001;
+}
+
+/* Mobile fallback */
+@media (max-width: 760px) {
+  .overlay-panels {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .overlay-current,
+  .overlay-next-card,
+  .overlay-notes {
+    grid-column: auto;
+    grid-row: auto;
+    aspect-ratio: 16 / 9;
+  }
+
+  .overlay-side {
+    grid-column: auto;
+    grid-row: auto;
+    grid-template-rows: auto;
+  }
+
+  .overlay-arrow {
+    width: 54px;
+    height: 54px;
+    font-size: 1.8rem;
+  }
 }
 
 .overlay-panels {
