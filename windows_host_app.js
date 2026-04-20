@@ -145,42 +145,39 @@ function connect() {
       const action = String(data.action || '').toLowerCase();
       const sender = String(data.username || 'someone');
 
-      if (action === 'next') {
-        console.log(`${sender} → NEXT`);
-        await pressKey('right');
+if (action === 'next') {
+  console.log(`${sender} → NEXT`);
+  await pressKey('right');
 
-        currentSlide += 1;
+  currentSlide += 1;
 
-    setInterval(() => {
-        exportSlides(currentSlide);
-        uploadSlides(currentSlide);
-      }, 1000); // every 1 second
+  exportSlides(currentSlide);
+  uploadSlides(currentSlide);
 
-        if (socket && socket.readyState === WebSocket.OPEN) {
-          socket.send(JSON.stringify({
-            type: 'slideState',
-            slideNumber: currentSlide
-          }));
-        }
-      }
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({
+      type: 'slideState',
+      slideNumber: currentSlide
+    }));
+  }
+}
 
-      if (action === 'previous') {
-        console.log(`${sender} → PREVIOUS`);
-        await pressKey('left');
+if (action === 'previous') {
+  console.log(`${sender} → PREVIOUS`);
+  await pressKey('left');
 
-        currentSlide = Math.max(1, currentSlide - 1);
-          setInterval(() => {
-            exportSlides(currentSlide);
-            uploadSlides(currentSlide);
-          }, 1000); // every 1 second
+  currentSlide = Math.max(1, currentSlide - 1);
 
-        if (socket && socket.readyState === WebSocket.OPEN) {
-          socket.send(JSON.stringify({
-            type: 'slideState',
-            slideNumber: currentSlide
-          }));
-        }
-      }
+  exportSlides(currentSlide);
+  uploadSlides(currentSlide);
+
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({
+      type: 'slideState',
+      slideNumber: currentSlide
+    }));
+  }
+}
 
     } catch (err) {
       console.error('Bad message:', err.message);
