@@ -21,6 +21,42 @@ function getContentType(filePath) {
 }
 
 const server = http.createServer((req, res) => {
+  if (req.method === 'POST' && req.url === '/upload-slide') {
+  const fileName = req.headers['file-name'];
+
+  if (!fileName) {
+    res.writeHead(400);
+    return res.end('Missing file name');
+  }
+
+  const fs = require('fs');
+  const path = require('path');
+
+  const slidesDir = path.join(process.cwd(), 'public', 'slides');
+
+  if (!fs.existsSync(slidesDir)) {
+    fs.mkdirSync(slidesDir, { recursive: true });
+  }
+
+  const filePath = path.join(slidesDir, fileName);
+  const writeStream = fs.createWriteStream(filePath);
+
+  req.pipe(writeStream);
+
+  writeStream.on('finish', () => {
+    console.log('Saved:', fileName);
+    res.writeHead(200);
+    res.end('OK');
+  });
+
+  writeStream.on('error', (err) => {
+    console.error('Write error:', err);
+    res.writeHead(500);
+    res.end('Error saving file');
+  });
+
+  return;
+}
   let requestPath = req.url.split('?')[0];
 
   if (requestPath === '/') {
