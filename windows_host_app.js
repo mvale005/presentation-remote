@@ -20,6 +20,7 @@ let shouldReconnect = true;
 let reconnectTimer = null;
 let reconnectAttempts = 0;
 let currentSlide = 1;
+let exportTimeout = null;
 
 // -----------------------------
 // EXPORT SLIDES
@@ -151,6 +152,14 @@ if (action === 'next') {
 
   currentSlide += 1;
 
+  // 🔥 throttle export (prevents freezing)
+  if (exportTimeout) clearTimeout(exportTimeout);
+
+  exportTimeout = setTimeout(() => {
+    exportSlides(currentSlide);
+    uploadSlides(currentSlide);
+  }, 200);
+
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.send(JSON.stringify({
       type: 'slideState',
@@ -158,12 +167,19 @@ if (action === 'next') {
     }));
   }
 }
-// testing to see if this comment is here :)
+
 if (action === 'previous') {
   console.log(`${sender} → PREVIOUS`);
   await pressKey('left');
 
   currentSlide = Math.max(1, currentSlide - 1);
+
+  if (exportTimeout) clearTimeout(exportTimeout);
+
+  exportTimeout = setTimeout(() => {
+    exportSlides(currentSlide);
+    uploadSlides(currentSlide);
+  }, 200);
 
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.send(JSON.stringify({
