@@ -44,6 +44,20 @@ function exportSlides(slideNumber) {
 }
 
 // -----------------------------
+// clear server slides
+//------------------------------
+async function clearServerSlides() {
+  try {
+    await fetch("https://remote.mvapphub.com/clear-slides", {
+      method: "POST"
+    });
+    console.log("Server slides cleared");
+  } catch (err) {
+    console.log("Failed to clear server slides", err.message);
+  }
+}
+
+// -----------------------------
 // UPLOAD SLIDES
 // -----------------------------
 async function uploadSlides(slideNumber) {
@@ -138,6 +152,7 @@ function connect() {
     socket = new WebSocket(SERVER_URL);
 
     socket.on('open', () => {
+        clearServerSlides();
         reconnectAttempts = 0;
         console.log('Connected to server.');
 
