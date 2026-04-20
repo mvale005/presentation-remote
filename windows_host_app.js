@@ -151,9 +151,6 @@ if (action === 'next') {
 
   currentSlide += 1;
 
-  exportSlides(currentSlide);
-  uploadSlides(currentSlide);
-
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.send(JSON.stringify({
       type: 'slideState',
@@ -161,15 +158,12 @@ if (action === 'next') {
     }));
   }
 }
-
+// testing to see if this comment is here :)
 if (action === 'previous') {
   console.log(`${sender} → PREVIOUS`);
   await pressKey('left');
 
   currentSlide = Math.max(1, currentSlide - 1);
-
-  exportSlides(currentSlide);
-  uploadSlides(currentSlide);
 
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.send(JSON.stringify({
