@@ -21,6 +21,8 @@ let reconnectTimer = null;
 let reconnectAttempts = 0;
 let currentSlide = 1;
 let exportTimeout = null;
+let isExporting = false;
+let pendingSlide = null;
 
 // -----------------------------
 // EXPORT SLIDES
@@ -152,20 +154,12 @@ if (action === 'next') {
 
   currentSlide += 1;
 
-  // 🔥 throttle export (prevents freezing)
-  if (exportTimeout) clearTimeout(exportTimeout);
+  triggerExport(currentSlide);
 
-  exportTimeout = setTimeout(() => {
-    exportSlides(currentSlide);
-    uploadSlides(currentSlide);
-  }, 200);
-
-  if (socket && socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify({
-      type: 'slideState',
-      slideNumber: currentSlide
-    }));
-  }
+  socket.send(JSON.stringify({
+    type: 'slideState',
+    slideNumber: currentSlide
+  }));
 }
 
 if (action === 'previous') {
@@ -174,19 +168,12 @@ if (action === 'previous') {
 
   currentSlide = Math.max(1, currentSlide - 1);
 
-  if (exportTimeout) clearTimeout(exportTimeout);
+  triggerExport(currentSlide);
 
-  exportTimeout = setTimeout(() => {
-    exportSlides(currentSlide);
-    uploadSlides(currentSlide);
-  }, 200);
-
-  if (socket && socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify({
-      type: 'slideState',
-      slideNumber: currentSlide
-    }));
-  }
+  socket.send(JSON.stringify({
+    type: 'slideState',
+    slideNumber: currentSlide
+  }));
 }
 
     } catch (err) {
@@ -202,6 +189,35 @@ if (action === 'previous') {
   socket.on('error', (error) => {
     console.error('WebSocket error:', error.message);
   });
+}
+
+function triggerExport(slideNumber) {
+  // If already exporting, remember latest slide and exit
+  if (isExporting) {
+    pendingSlide = slideNumber;
+    return;
+  }
+
+  isExporting = true;
+
+  console.log("EXPORT START:", slideNumber);
+
+  exportSlides(slideNumber);
+
+  setTimeout(async () => {
+    await uploadSlides(slideNumber);
+
+    console.log("EXPORT DONE:", slideNumber);
+
+    isExporting = false;
+
+    // If user clicked ahead, export the latest slide only
+    if (pendingSlide !== null && pendingSlide !== slideNumber) {
+      const next = pendingSlide;
+      pendingSlide = null;
+      triggerExport(next);
+    }
+  }, 300); // small delay to allow export to finish
 }
 
 // -----------------------------
