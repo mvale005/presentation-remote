@@ -244,12 +244,12 @@ if (data.type === 'slideState') {
 
 if (overlaySlide) {
   overlaySlide.innerHTML = `
-<img src="/slides/Slide${currentSlide}.PNG" class="slide-img" />  `;
+<img src="/slides/Slide${currentSlide}.PNG?${Date.now()}" />  `;
 }
 
 if (overlayNextSlide) {
   overlayNextSlide.innerHTML = `
-<img src="/slides/Slide${currentSlide + 1}.PNG" class="slide-img small" />  `;
+<img src="/slides/Slide${currentSlide + 1}.PNG?${Date.now()}" />  `;
 }
 
 
