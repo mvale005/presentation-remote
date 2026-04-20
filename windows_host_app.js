@@ -83,7 +83,19 @@ async function uploadSlides(slideNumber) {
 // -----------------------------
 // KEY PRESS
 // -----------------------------
-function pressKey(keyName) {
+const { execSync } = require('child_process');
+
+function focusPowerPoint() {
+  try {
+    execSync(`powershell -Command "(New-Object -ComObject WScript.Shell).AppActivate('PowerPoint')"`);
+  } catch (e) {
+    console.log("Could not focus PowerPoint");
+  }
+}
+
+async function pressKey(keyName) {
+  focusPowerPoint(); // 👈 bring PowerPoint to front
+
   return keySender.sendKey(keyName).catch((err) => {
     console.error(`Failed to press ${keyName}:`, err.message);
   });
