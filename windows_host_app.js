@@ -28,56 +28,56 @@ let pendingSlide = null;
 // EXPORT SLIDES
 // -----------------------------
 function exportSlides(slideNumber) {
-  console.log("EXPORT TRIGGERED:", slideNumber);
+    console.log("EXPORT TRIGGERED:", slideNumber);
 
-  exec(
-    `powershell -ExecutionPolicy Bypass -File "C:\\presentation-host\\export.ps1" -slideIndex ${slideNumber}`,
-    (err, stdout, stderr) => {
-      console.log("STDOUT:", stdout);
-      console.log("STDERR:", stderr);
+    exec(
+        `powershell -ExecutionPolicy Bypass -File "C:\\presentation-host\\export.ps1" -slideIndex ${slideNumber}`,
+        (err, stdout, stderr) => {
+            console.log("STDOUT:", stdout);
+            console.log("STDERR:", stderr);
 
-      if (err) {
-        console.log("EXPORT ERROR:", err.message);
-      }
-    }
-  );
+            if (err) {
+                console.log("EXPORT ERROR:", err.message);
+            }
+        }
+    );
 }
 
 // -----------------------------
 // UPLOAD SLIDES
 // -----------------------------
 async function uploadSlides(slideNumber) {
-  const slidesDir = "C:\\presentation-host\\public\\slides";
+    const slidesDir = "C:\\presentation-host\\public\\slides";
 
-  const targets = [
-    `Slide${slideNumber}.PNG`,
-    `Slide${slideNumber + 1}.PNG`
-  ];
+    const targets = [
+        `Slide${slideNumber}.PNG`,
+        `Slide${slideNumber + 1}.PNG`
+    ];
 
-  for (const file of targets) {
-    const filePath = path.join(slidesDir, file);
+    for (const file of targets) {
+        const filePath = path.join(slidesDir, file);
 
-    if (!fs.existsSync(filePath)) continue;
+        if (!fs.existsSync(filePath)) continue;
 
-    const fileBuffer = fs.readFileSync(filePath);
+        const fileBuffer = fs.readFileSync(filePath);
 
-    try {
-      await fetch("https://remote.mvapphub.com/upload-slide", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/octet-stream",
-          "File-Name": file
-        },
-        body: fileBuffer
-      });
+        try {
+            await fetch("https://remote.mvapphub.com/upload-slide", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/octet-stream",
+                    "File-Name": file
+                },
+                body: fileBuffer
+            });
 
-      console.log(`Uploaded: ${file}`);
-    } catch (err) {
-      console.log("Upload failed:", file, err.message);
+            console.log(`Uploaded: ${file}`);
+        } catch (err) {
+            console.log("Upload failed:", file, err.message);
+        }
     }
-  }
 
-  console.log("Slides upload complete");
+    console.log("Slides upload complete");
 }
 
 // -----------------------------
@@ -86,150 +86,153 @@ async function uploadSlides(slideNumber) {
 const { execSync } = require('child_process');
 
 function focusPowerPoint() {
-  try {
-    execSync(`powershell -Command "(New-Object -ComObject WScript.Shell).AppActivate('PowerPoint')"`);
-  } catch (e) {
-    console.log("Could not focus PowerPoint");
-  }
+    try {
+        execSync(`powershell -Command "(New-Object -ComObject WScript.Shell).AppActivate('PowerPoint')"`);
+    } catch (e) {
+        console.log("Could not focus PowerPoint");
+    }
 }
 
 async function pressKey(keyName) {
-  focusPowerPoint(); // 👈 bring PowerPoint to front
+    focusPowerPoint(); // 👈 bring PowerPoint to front
 
-  return keySender.sendKey(keyName).catch((err) => {
-    console.error(`Failed to press ${keyName}:`, err.message);
-  });
+    return keySender.sendKey(keyName).catch((err) => {
+        console.error(`Failed to press ${keyName}:`, err.message);
+    });
 }
 
 // -----------------------------
 // PING
 // -----------------------------
 function sendPing() {
-  if (socket && socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify({ type: 'ping', source: 'host' }));
-  }
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'ping', source: 'host' }));
+    }
 }
 
 // -----------------------------
 // RECONNECT
 // -----------------------------
 function scheduleReconnect() {
-  if (!shouldReconnect) return;
+    if (!shouldReconnect) return;
 
-  if (reconnectTimer) clearTimeout(reconnectTimer);
+    if (reconnectTimer) clearTimeout(reconnectTimer);
 
-  const delay = Math.min(
-    RECONNECT_BASE_MS * Math.max(1, reconnectAttempts + 1),
-    RECONNECT_MAX_MS
-  );
+    const delay = Math.min(
+        RECONNECT_BASE_MS * Math.max(1, reconnectAttempts + 1),
+        RECONNECT_MAX_MS
+    );
 
-  reconnectAttempts += 1;
-  console.log(`Reconnecting in ${Math.round(delay / 1000)} seconds...`);
+    reconnectAttempts += 1;
+    console.log(`Reconnecting in ${Math.round(delay / 1000)} seconds...`);
 
-  reconnectTimer = setTimeout(connect, delay);
+    reconnectTimer = setTimeout(connect, delay);
 }
 
 // -----------------------------
 // CONNECT
 // -----------------------------
 function connect() {
-  console.log(`Connecting to: ${SERVER_URL}`);
+    console.log(`Connecting to: ${SERVER_URL}`);
 
-  socket = new WebSocket(SERVER_URL);
+    socket = new WebSocket(SERVER_URL);
 
-  socket.on('open', () => {
-    reconnectAttempts = 0;
-    console.log('Connected to server.');
+    socket.on('open', () => {
+        reconnectAttempts = 0;
+        console.log('Connected to server.');
 
-    socket.send(JSON.stringify({
-      type: 'join',
-      room: ROOM_CODE,
-      username: HOST_NAME,
-      role: 'host'
-    }));
+        socket.send(JSON.stringify({
+            type: 'join',
+            room: ROOM_CODE,
+            username: HOST_NAME,
+            role: 'host'
+        }));
 
-    console.log(`Joined room ${ROOM_CODE}`);
-  });
+        console.log(`Joined room ${ROOM_CODE}`);
+        console.log("Initial export for slide 1");
+        exportSlides(1);
+        uploadSlides(1);
+    });
 
-  socket.on('message', async (rawMessage) => {
-    try {
-      const data = JSON.parse(rawMessage.toString());
+    socket.on('message', async (rawMessage) => {
+        try {
+            const data = JSON.parse(rawMessage.toString());
 
-      if (data.type !== 'slide') return;
+            if (data.type !== 'slide') return;
 
-      const action = String(data.action || '').toLowerCase();
-      const sender = String(data.username || 'someone');
+            const action = String(data.action || '').toLowerCase();
+            const sender = String(data.username || 'someone');
 
-if (action === 'next') {
-  console.log(`${sender} → NEXT`);
-  await pressKey('right');
+            if (action === 'next') {
+                console.log(`${sender} → NEXT`);
+                await pressKey('right');
 
-  currentSlide += 1;
+                currentSlide += 1;
 
-  triggerExport(currentSlide);
+                triggerExport(currentSlide);
 
-  socket.send(JSON.stringify({
-    type: 'slideState',
-    slideNumber: currentSlide
-  }));
-}
+                socket.send(JSON.stringify({
+                    type: 'slideState',
+                    slideNumber: currentSlide
+                }));
+            }
 
-if (action === 'previous') {
-  console.log(`${sender} → PREVIOUS`);
-  await pressKey('left');
+            if (action === 'previous') {
+                console.log(`${sender} → PREVIOUS`);
+                await pressKey('left');
 
-  currentSlide = Math.max(1, currentSlide - 1);
+                currentSlide = Math.max(1, currentSlide - 1);
 
-  triggerExport(currentSlide);
+                triggerExport(currentSlide);
 
-  socket.send(JSON.stringify({
-    type: 'slideState',
-    slideNumber: currentSlide
-  }));
-}
+                socket.send(JSON.stringify({
+                    type: 'slideState',
+                    slideNumber: currentSlide
+                }));
+            }
 
-    } catch (err) {
-      console.error('Bad message:', err.message);
-    }
-  });
+        } catch (err) {
+            console.error('Bad message:', err.message);
+        }
+    });
 
-  socket.on('close', () => {
-    console.log('Disconnected');
-    if (shouldReconnect) scheduleReconnect();
-  });
+    socket.on('close', () => {
+        console.log('Disconnected');
+        if (shouldReconnect) scheduleReconnect();
+    });
 
-  socket.on('error', (error) => {
-    console.error('WebSocket error:', error.message);
-  });
+    socket.on('error', (error) => {
+        console.error('WebSocket error:', error.message);
+    });
 }
 
 function triggerExport(slideNumber) {
-  // If already exporting, remember latest slide and exit
-  if (isExporting) {
-    pendingSlide = slideNumber;
-    return;
-  }
-
-  isExporting = true;
-
-  console.log("EXPORT START:", slideNumber);
-
-  exportSlides(slideNumber);
-
-  setTimeout(async () => {
-    await uploadSlides(slideNumber);
-
-    console.log("EXPORT DONE:", slideNumber);
-
-    isExporting = false;
-
-    // If user clicked ahead, export the latest slide only
-    if (pendingSlide !== null && pendingSlide !== slideNumber) {
-      const next = pendingSlide;
-      pendingSlide = null;
-      triggerExport(next);
+    // If already exporting, remember latest slide and exit
+    if (isExporting) {
+        pendingSlide = slideNumber;
+        return;
     }
-  }, 300); // small delay to allow export to finish
+
+    isExporting = true;
+
+    console.log("EXPORT START:", slideNumber);
+
+    exportSlides(slideNumber);
+
+    setTimeout(async () => {
+        await uploadSlides(slideNumber);
+
+        console.log("EXPORT DONE:", slideNumber);
+
+        isExporting = false;
+
+        // If user clicked ahead, export the latest slide only
+        if (pendingSlide !== null && pendingSlide !== slideNumber) {
+            const next = pendingSlide;
+            pendingSlide = null;
+            triggerExport(next);
+        }
+    }, 300); // small delay to allow export to finish
 }
 
 // -----------------------------
@@ -241,13 +244,13 @@ setInterval(sendPing, HEARTBEAT_MS);
 // SHUTDOWN
 // -----------------------------
 process.on('SIGINT', () => {
-  shouldReconnect = false;
+    shouldReconnect = false;
 
-  if (reconnectTimer) clearTimeout(reconnectTimer);
-  if (socket) socket.close();
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+    if (socket) socket.close();
 
-  console.log('\nHost app stopped.');
-  process.exit(0);
+    console.log('\nHost app stopped.');
+    process.exit(0);
 });
 
 // -----------------------------
