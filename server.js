@@ -83,6 +83,25 @@ const server = http.createServer((req, res) => {
   }
 
   // -----------------------------
+// SERVE SLIDES DIRECTORY
+// -----------------------------
+if (req.method === 'GET' && req.url.startsWith('/slides/')) {
+  const slidesPath = path.join(process.cwd(), 'public', req.url);
+
+  if (fs.existsSync(slidesPath)) {
+    const stream = fs.createReadStream(slidesPath);
+
+    res.writeHead(200, { 'Content-Type': 'image/png' });
+    stream.pipe(res);
+  } else {
+    res.writeHead(404);
+    res.end('Slide not found');
+  }
+
+  return;
+}
+
+  // -----------------------------
   // STATIC FILE SERVING
   // -----------------------------
   let requestPath = req.url.split('?')[0];
