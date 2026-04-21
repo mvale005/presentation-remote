@@ -21,6 +21,28 @@ function getContentType(filePath) {
 }
 
 const server = http.createServer((req, res) => {
+  if (req.method === 'POST' && req.url === '/clear-slides') {
+  const fs = require('fs');
+  const path = require('path');
+
+  const slidesDir = path.join(process.cwd(), 'public', 'slides');
+
+  if (fs.existsSync(slidesDir)) {
+    const files = fs.readdirSync(slidesDir);
+
+    for (const file of files) {
+      if (file.toLowerCase().endsWith('.png')) {
+        fs.unlinkSync(path.join(slidesDir, file));
+      }
+    }
+  }
+
+  console.log("Server slides cleared");
+
+  res.writeHead(200);
+  res.end("Cleared");
+  return;
+}
   if (req.method === 'POST' && req.url === '/upload-slide') {
   const fileName = req.headers['file-name'];
 

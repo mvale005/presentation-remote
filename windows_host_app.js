@@ -1,4 +1,4 @@
-const { exec } = require('child_process');
+const { exec, execSync } = require('child_process');
 const WebSocket = require('ws');
 const keySender = require('node-key-sender');
 const fs = require('fs');
@@ -44,20 +44,6 @@ function exportSlides(slideNumber) {
 }
 
 // -----------------------------
-// clear server slides
-//------------------------------
-async function clearServerSlides() {
-  try {
-    await fetch("https://remote.mvapphub.com/clear-slides", {
-      method: "POST"
-    });
-    console.log("Server slides cleared");
-  } catch (err) {
-    console.log("Failed to clear server slides", err.message);
-  }
-}
-
-// -----------------------------
 // UPLOAD SLIDES
 // -----------------------------
 async function uploadSlides(slideNumber) {
@@ -97,7 +83,7 @@ async function uploadSlides(slideNumber) {
 // -----------------------------
 // KEY PRESS
 // -----------------------------
-const { execSync } = require('child_process');
+
 
 function focusPowerPoint() {
     try {
@@ -142,7 +128,19 @@ function scheduleReconnect() {
 
     reconnectTimer = setTimeout(connect, delay);
 }
-
+// -----------------------------
+// CLEAR SERVER SLIDES
+// -----------------------------
+async function clearServerSlides() {
+    try {
+        await fetch("https://remote.mvapphub.com/clear-slides", {
+            method: "POST"
+        });
+        console.log("Server slides cleared");
+    } catch (err) {
+        console.log("Failed to clear server slides", err.message);
+    }
+}
 // -----------------------------
 // CONNECT
 // -----------------------------
@@ -152,9 +150,9 @@ function connect() {
     socket = new WebSocket(SERVER_URL);
 
     socket.on('open', () => {
-        clearServerSlides();
         reconnectAttempts = 0;
         console.log('Connected to server.');
+        clearServerSlides();
 
         socket.send(JSON.stringify({
             type: 'join',
