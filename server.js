@@ -49,6 +49,7 @@ const server = http.createServer((req, res) => {
   // UPLOAD SLIDE
   // -----------------------------
   if (req.method === 'POST' && req.url === '/upload-slide') {
+    console.log("UPLOAD REQUEST RECEIVED:", req.url);
     const fileName = req.headers['file-name'];
 
     if (!fileName) {
