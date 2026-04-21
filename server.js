@@ -21,64 +21,70 @@ function getContentType(filePath) {
 }
 
 const server = http.createServer((req, res) => {
+
+  // -----------------------------
+  // CLEAR SLIDES
+  // -----------------------------
   if (req.method === 'POST' && req.url === '/clear-slides') {
-  const fs = require('fs');
-  const path = require('path');
+    const slidesDir = path.join(process.cwd(), 'public', 'slides');
 
-  const slidesDir = path.join(process.cwd(), 'public', 'slides');
+    if (fs.existsSync(slidesDir)) {
+      const files = fs.readdirSync(slidesDir);
 
-  if (fs.existsSync(slidesDir)) {
-    const files = fs.readdirSync(slidesDir);
-
-    for (const file of files) {
-      if (file.toLowerCase().endsWith('.png')) {
-        fs.unlinkSync(path.join(slidesDir, file));
+      for (const file of files) {
+        if (file.toLowerCase().endsWith('.png')) {
+          fs.unlinkSync(path.join(slidesDir, file));
+        }
       }
     }
-  }
 
-  console.log("Server slides cleared");
+    console.log("Server slides cleared");
 
-  res.writeHead(200);
-  res.end("Cleared");
-  return;
-}
-  if (req.method === 'POST' && req.url === '/upload-slide') {
-  const fileName = req.headers['file-name'];
-
-  if (!fileName) {
-    res.writeHead(400);
-    return res.end('Missing file name');
-  }
-
-  const fs = require('fs');
-  const path = require('path');
-
-  const slidesDir = path.join(process.cwd(), 'public', 'slides');
-
-  if (!fs.existsSync(slidesDir)) {
-    fs.mkdirSync(slidesDir, { recursive: true });
-  }
-
-  const filePath = path.join(slidesDir, fileName);
-  const writeStream = fs.createWriteStream(filePath);
-
-  req.pipe(writeStream);
-
-  writeStream.on('finish', () => {
-    console.log('Saved:', fileName);
     res.writeHead(200);
-    res.end('OK');
-  });
+    res.end("Cleared");
+    return;
+  }
 
-  writeStream.on('error', (err) => {
-    console.error('Write error:', err);
-    res.writeHead(500);
-    res.end('Error saving file');
-  });
+  // -----------------------------
+  // UPLOAD SLIDE
+  // -----------------------------
+  if (req.method === 'POST' && req.url === '/upload-slide') {
+    const fileName = req.headers['file-name'];
 
-  return;
-}
+    if (!fileName) {
+      res.writeHead(400);
+      return res.end('Missing file name');
+    }
+
+    const slidesDir = path.join(process.cwd(), 'public', 'slides');
+
+    if (!fs.existsSync(slidesDir)) {
+      fs.mkdirSync(slidesDir, { recursive: true });
+    }
+
+    const filePath = path.join(slidesDir, fileName);
+    const writeStream = fs.createWriteStream(filePath);
+
+    req.pipe(writeStream);
+
+    writeStream.on('finish', () => {
+      console.log('Saved:', fileName);
+      res.writeHead(200);
+      res.end('OK');
+    });
+
+    writeStream.on('error', (err) => {
+      console.error('Write error:', err);
+      res.writeHead(500);
+      res.end('Error saving file');
+    });
+
+    return;
+  }
+
+  // -----------------------------
+  // STATIC FILE SERVING
+  // -----------------------------
   let requestPath = req.url.split('?')[0];
 
   if (requestPath === '/') {
