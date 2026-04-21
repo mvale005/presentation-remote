@@ -61,15 +61,33 @@ function addLog(message) {
     }
 }
 
-function setSlideImage(imgEl, slideNumber) {
-  const newSrc = `/slides/Slide${slideNumber}.PNG?${Date.now()}`;
-  const img = new Image();
+function loadImageWithRetry(container, slideNumber, className) {
+  let attempts = 0;
 
-  img.onload = () => {
-    imgEl.src = newSrc;
-  };
+  function tryLoad() {
+    const img = new Image();
+    const src = `/slides/Slide${slideNumber}.PNG?${Date.now()}`;
 
-  img.src = newSrc;
+    img.onload = () => {
+      img.className = className;
+      container.innerHTML = '';
+      container.appendChild(img);
+    };
+
+    img.onerror = () => {
+      attempts++;
+
+      if (attempts < 10) {
+        setTimeout(tryLoad, 100);
+      } else {
+        container.innerHTML = `<div>Slide ${slideNumber}</div>`;
+      }
+    };
+
+    img.src = src;
+  }
+
+  tryLoad();
 }
 
 function renderUsers(users) {
@@ -257,42 +275,12 @@ const timestamp = Date.now();
 
 
 if (overlaySlide) {
-  const newImg = new Image();
-  const newSrc = `/slides/Slide${currentSlide}.PNG?${Date.now()}`;
-
-  newImg.onload = () => {
-    newImg.className = 'slide-img';
-    overlaySlide.innerHTML = '';
-    overlaySlide.appendChild(newImg);
-  };
-
-  newImg.onerror = () => {
-    // fallback so UI doesn't get stuck
-    overlaySlide.innerHTML = `<div>Slide ${currentSlide}</div>`;
-  };
-
-  newImg.src = newSrc;
+  loadImageWithRetry(overlaySlide, currentSlide, 'slide-img');
 }
 
 if (overlayNextSlide) {
-  const newNextImg = new Image();
-  const nextSrc = `/slides/Slide${currentSlide + 1}.PNG?${Date.now()}`;
-
-  newNextImg.onload = () => {
-    newNextImg.className = 'slide-img small';
-    overlayNextSlide.innerHTML = '';
-    overlayNextSlide.appendChild(newNextImg);
-  };
-
-  newNextImg.onerror = () => {
-    overlayNextSlide.innerHTML = `<div>Slide ${currentSlide + 1}</div>`;
-  };
-
-  newNextImg.src = nextSrc;
+  loadImageWithRetry(overlayNextSlide, currentSlide + 1, 'slide-img small');
 }
-
-
-
 
 }
 
