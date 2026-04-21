@@ -255,6 +255,7 @@ if (data.type === 'slideState') {
 
 const timestamp = Date.now();
 
+
 if (overlaySlide) {
   const newImg = new Image();
   const newSrc = `/slides/Slide${currentSlide}.PNG?${Date.now()}`;
@@ -263,6 +264,11 @@ if (overlaySlide) {
     newImg.className = 'slide-img';
     overlaySlide.innerHTML = '';
     overlaySlide.appendChild(newImg);
+  };
+
+  newImg.onerror = () => {
+    // fallback so UI doesn't get stuck
+    overlaySlide.innerHTML = `<div>Slide ${currentSlide}</div>`;
   };
 
   newImg.src = newSrc;
@@ -278,8 +284,15 @@ if (overlayNextSlide) {
     overlayNextSlide.appendChild(newNextImg);
   };
 
+  newNextImg.onerror = () => {
+    overlayNextSlide.innerHTML = `<div>Slide ${currentSlide + 1}</div>`;
+  };
+
   newNextImg.src = nextSrc;
 }
+
+
+
 
 }
 
