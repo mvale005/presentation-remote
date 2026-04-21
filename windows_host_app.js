@@ -79,7 +79,7 @@ async function uploadSlides(slideNumber) {
         }
 
         try {
-            await fetch("https://remote.mvapphub.com/upload-slide", {
+            const response = await fetch("https://remote.mvapphub.com/upload-slide", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/octet-stream",
@@ -88,9 +88,13 @@ async function uploadSlides(slideNumber) {
                 body: fileBuffer
             });
 
-            console.log(`Uploaded: ${file}`);
+            console.log("UPLOAD STATUS:", response.status);
+
+            const text = await response.text();
+            console.log("UPLOAD RESPONSE:", text);
+
         } catch (err) {
-            console.log("Upload failed:", file, err.message);
+            console.log("UPLOAD FAILED:", err.message);
         }
     }
 
