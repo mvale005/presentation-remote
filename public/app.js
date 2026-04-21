@@ -61,6 +61,17 @@ function addLog(message) {
     }
 }
 
+function setSlideImage(imgEl, slideNumber) {
+  const newSrc = `/slides/Slide${slideNumber}.PNG?${Date.now()}`;
+  const img = new Image();
+
+  img.onload = () => {
+    imgEl.src = newSrc;
+  };
+
+  img.src = newSrc;
+}
+
 function renderUsers(users) {
     userList.innerHTML = '';
 
@@ -245,23 +256,30 @@ if (data.type === 'slideState') {
 const timestamp = Date.now();
 
 if (overlaySlide) {
-  const img = document.createElement('img');
-  img.src = `/slides/Slide${currentSlide}.PNG?${timestamp}`;
-  img.className = 'slide-img';
+  const newImg = new Image();
+  const newSrc = `/slides/Slide${currentSlide}.PNG?${Date.now()}`;
 
-  overlaySlide.innerHTML = '';
-  overlaySlide.appendChild(img);
+  newImg.onload = () => {
+    newImg.className = 'slide-img';
+    overlaySlide.innerHTML = '';
+    overlaySlide.appendChild(newImg);
+  };
+
+  newImg.src = newSrc;
 }
 
 if (overlayNextSlide) {
-  const nextImg = document.createElement('img');
-  nextImg.src = `/slides/Slide${currentSlide + 1}.PNG?${timestamp}`;
-  nextImg.className = 'slide-img small';
+  const newNextImg = new Image();
+  const nextSrc = `/slides/Slide${currentSlide + 1}.PNG?${Date.now()}`;
 
-  overlayNextSlide.innerHTML = '';
-  overlayNextSlide.appendChild(nextImg);
+  newNextImg.onload = () => {
+    newNextImg.className = 'slide-img small';
+    overlayNextSlide.innerHTML = '';
+    overlayNextSlide.appendChild(newNextImg);
+  };
+
+  newNextImg.src = nextSrc;
 }
-
 
 }
 

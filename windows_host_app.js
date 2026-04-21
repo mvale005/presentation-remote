@@ -163,8 +163,11 @@ function connect() {
 
         console.log(`Joined room ${ROOM_CODE}`);
         console.log("Initial export for slide 1");
-        exportSlides(1);
-        uploadSlides(1);
+        setTimeout(() => {
+            console.log("Initial export for slide 1");
+            exportSlides(1);
+            uploadSlides(1);
+        }, 500);
     });
 
     socket.on('message', async (rawMessage) => {
