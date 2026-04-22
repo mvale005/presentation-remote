@@ -207,10 +207,7 @@ function connect() {
 
                 triggerExport(currentSlide);
 
-                socket.send(JSON.stringify({
-                    type: 'slideState',
-                    slideNumber: currentSlide
-                }));
+                
             }
 
             if (action === 'previous') {
@@ -243,32 +240,38 @@ function connect() {
 }
 
 function triggerExport(slideNumber) {
-    // If already exporting, remember latest slide and exit
-    if (isExporting) {
-        pendingSlide = slideNumber;
-        return;
+  if (isExporting) {
+    pendingSlide = slideNumber;
+    return;
+  }
+
+  isExporting = true;
+
+  console.log("EXPORT START:", slideNumber);
+
+  exportSlides(slideNumber);
+
+  setTimeout(async () => {
+    await uploadSlides(slideNumber);
+
+    console.log("EXPORT DONE:", slideNumber);
+
+    // 🔥 ONLY NOW notify frontend
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({
+        type: 'slideState',
+        slideNumber: slideNumber
+      }));
     }
 
-    isExporting = true;
+    isExporting = false;
 
-    console.log("EXPORT START:", slideNumber);
-
-    exportSlides(slideNumber);
-
-    setTimeout(async () => {
-        await uploadSlides(slideNumber);
-
-        console.log("EXPORT DONE:", slideNumber);
-
-        isExporting = false;
-
-        // If user clicked ahead, export the latest slide only
-        if (pendingSlide !== null && pendingSlide !== slideNumber) {
-            const next = pendingSlide;
-            pendingSlide = null;
-            triggerExport(next);
-        }
-    }, 300); // small delay to allow export to finish
+    if (pendingSlide !== null && pendingSlide !== slideNumber) {
+      const next = pendingSlide;
+      pendingSlide = null;
+      triggerExport(next);
+    }
+  }, 300);
 }
 
 // -----------------------------
