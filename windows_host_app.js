@@ -47,6 +47,7 @@ function exportSlides(slideNumber) {
 // UPLOAD SLIDES
 // -----------------------------
 async function uploadSlides(slideNumber) {
+    console.log("UPLOAD FUNCTION CALLED:", slideNumber);
     const slidesDir = "C:\\presentation-host\\public\\slides";
 
     const targets = [
