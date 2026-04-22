@@ -282,12 +282,15 @@ function connectSocket() {
                 const currentSlide = Number(data.slideNumber) || 1;
 
                 if (overlaySlide) {
-                    updateSlideImage(overlaySlide, currentSlide, 'slide-img');
+                    const img = document.createElement('img');
+                    img.className = 'slide-img';
+                    img.src = `https://remote.mvapphub.com/slides/Slide${currentSlide}.PNG?${Date.now()}`;
+
+                    overlaySlide.innerHTML = '';
+                    overlaySlide.appendChild(img);
                 }
 
-                if (overlayNextSlide) {
-                    updateSlideImage(overlayNextSlide, currentSlide + 1, 'slide-img small');
-                }
+                // TEMP: disable next slide preview (causes 404 spam)
             }
 
 
