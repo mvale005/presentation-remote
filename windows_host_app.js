@@ -47,60 +47,57 @@ function exportSlides(slideNumber) {
 // UPLOAD SLIDES
 // -----------------------------
 async function uploadSlides(slideNumber) {
-    console.log("UPLOAD FUNCTION CALLED:", slideNumber);
-    const slidesDir = "C:\\presentation-host\\public\\slides";
+  console.log("UPLOAD FUNCTION CALLED:", slideNumber);
 
-    const targets = [
-        `Slide${slideNumber}.PNG`,
-        `Slide${slideNumber + 1}.PNG`
-    ];
-    for (const file of targets) {
-        const filePath = path.join(slidesDir, file);
+  const slidesDir = "C:\\presentation-host\\public\\slides";
 
-        // wait for file to exist
-        let retries = 0;
-        let ready = false;
+  const targets = [
+    `Slide${slideNumber}.PNG`,
+    `Slide${slideNumber + 1}.PNG`
+  ];
 
-        while (retries < 15) {
-            try {
-                fs.accessSync(filePath, fs.constants.R_OK);
-                ready = true;
-                break;
-            } catch {
-                await new Promise(r => setTimeout(r, 100));
-                retries++;
-            }
-        }
+  for (const file of targets) {
+    const filePath = path.join(slidesDir, file);
 
-        if (!ready) {
-            console.log("Skipping locked file:", file);
-            continue;
-        }
+    let fileBuffer = null;
 
-        // THIS LINE FIXES YOUR ERROR
-        const fileBuffer = fs.readFileSync(filePath);
-
-        try {
-            const response = await fetch("https://remote.mvapphub.com/upload-slide", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/octet-stream",
-                    "File-Name": file
-                },
-                body: fileBuffer
-            });
-
-            console.log("UPLOAD STATUS:", response.status);
-
-            const text = await response.text();
-            console.log("UPLOAD RESPONSE:", text);
-
-        } catch (err) {
-            console.log("UPLOAD FAILED:", err.message);
-        }
+    // 🔥 Wait until file is actually readable (not locked)
+    for (let i = 0; i < 15; i++) {
+      try {
+        fileBuffer = fs.readFileSync(filePath);
+        break; // success
+      } catch (err) {
+        // file not ready yet → wait
+        await new Promise(r => setTimeout(r, 100));
+      }
     }
 
-    console.log("Slides upload complete");
+    if (!fileBuffer) {
+      console.log("Skipping file (still locked or missing):", file);
+      continue;
+    }
+
+    try {
+      const response = await fetch("https://remote.mvapphub.com/upload-slide", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/octet-stream",
+          "File-Name": file
+        },
+        body: fileBuffer
+      });
+
+      console.log("UPLOAD STATUS:", response.status);
+
+      const text = await response.text();
+      console.log("UPLOAD RESPONSE:", text);
+
+    } catch (err) {
+      console.log("UPLOAD FAILED:", err.message);
+    }
+  }
+
+  console.log("Slides upload complete");
 }
 
 // -----------------------------
