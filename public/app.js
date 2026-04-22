@@ -234,7 +234,9 @@ function connectSocket() {
 
                     console.log("SETTING IMAGE:", url);
 
-                    img.src = url + '?' + Date.now();
+                    setTimeout(() => {
+                        img.src = url + '?' + Date.now();
+                    }, 500); // you can tweak this (see below)
                 }
             }
 
