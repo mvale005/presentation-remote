@@ -281,16 +281,14 @@ function connectSocket() {
             if (data.type === 'slideState') {
                 const currentSlide = Number(data.slideNumber) || 1;
 
-                if (overlaySlide) {
-                    const img = document.createElement('img');
-                    img.className = 'slide-img';
-                    img.src = `https://remote.mvapphub.com/slides/Slide${currentSlide}.PNG?${Date.now()}`;
+                const img = document.getElementById('mainSlideImg');
 
-                    overlaySlide.innerHTML = '';
-                    overlaySlide.appendChild(img);
+                if (img) {
+                    const url = `https://remote.mvapphub.com/slides/Slide${currentSlide}.PNG?${Date.now()}`;
+                    console.log("Loading image:", url);
+
+                    img.src = url;
                 }
-
-                // TEMP: disable next slide preview (causes 404 spam)
             }
 
 
