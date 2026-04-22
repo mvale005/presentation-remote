@@ -84,30 +84,31 @@ const server = http.createServer((req, res) => {
   }
 
   // -----------------------------
-// SERVE SLIDES DIRECTORY
-// -----------------------------
-if (req.method === 'GET' && req.url.startsWith('/slides/')) {
-  const slidesPath = path.join(process.cwd(), 'public', req.url);
+  // SERVE SLIDES DIRECTORY
+  // -----------------------------
+  if (req.method === 'GET' && req.url.startsWith('/slides/')) {
+      const cleanUrl = req.url.split('?')[0];
+      const slidesPath = path.join(process.cwd(), 'public', cleanUrl);
 
-  // ❗ Prevent directory access
-  if (slidesPath.endsWith('/')) {
-    res.writeHead(403);
-    res.end('Directory access not allowed');
+    // ❗ Prevent directory access
+    if (slidesPath.endsWith('/')) {
+      res.writeHead(403);
+      res.end('Directory access not allowed');
+      return;
+    }
+
+    if (fs.existsSync(slidesPath) && fs.statSync(slidesPath).isFile()) {
+      const stream = fs.createReadStream(slidesPath);
+
+      res.writeHead(200, { 'Content-Type': 'image/png' });
+      stream.pipe(res);
+    } else {
+      res.writeHead(404);
+      res.end('Slide not found');
+    }
+
     return;
   }
-
-  if (fs.existsSync(slidesPath) && fs.statSync(slidesPath).isFile()) {
-    const stream = fs.createReadStream(slidesPath);
-
-    res.writeHead(200, { 'Content-Type': 'image/png' });
-    stream.pipe(res);
-  } else {
-    res.writeHead(404);
-    res.end('Slide not found');
-  }
-
-  return;
-}
 
   // -----------------------------
   // STATIC FILE SERVING
