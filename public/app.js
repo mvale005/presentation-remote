@@ -25,6 +25,7 @@ const closeOverlay = document.getElementById('closeOverlay');
 const overlayPrev = document.getElementById('overlayPrev');
 const overlayNext = document.getElementById('overlayNext');
 const overlayNextSlide = document.getElementById('overlayNextSlide');
+const SLIDE_BASE_URL = "https://remote.mvapphub.com/slides";
 
 console.log("overlaySlide:", overlaySlide);
 console.log("overlayNextSlide:", overlayNextSlide);
@@ -64,59 +65,8 @@ function addLog(message) {
     }
 }
 
-function waitForImage(url, attempts = 20, delay = 150) {
-    return new Promise((resolve) => {
-        let tries = 0;
 
-        const check = () => {
-            const img = new Image();
 
-            img.onload = () => resolve(url);
-            img.onerror = () => {
-                tries++;
-                if (tries >= attempts) {
-                    console.log("Image never loaded:", url);
-                    resolve(url); // fallback anyway
-                } else {
-                    setTimeout(check, delay);
-                }
-            };
-
-            img.src = url + '?' + Date.now();
-        };
-
-        check();
-    });
-}
-
-function loadImageWithRetry(container, slideNumber, className) {
-    let attempts = 0;
-
-    function tryLoad() {
-        const img = new Image();
-        const src = `/slides/Slide${slideNumber}.PNG?${Date.now()}`;
-
-        img.onload = () => {
-            img.className = className;
-            container.innerHTML = '';
-            container.appendChild(img);
-        };
-
-        img.onerror = () => {
-            attempts++;
-
-            if (attempts < 10) {
-                setTimeout(tryLoad, 100);
-            } else {
-                container.innerHTML = `<div>Slide ${slideNumber}</div>`;
-            }
-        };
-
-        img.src = src;
-    }
-
-    tryLoad();
-}
 
 function renderUsers(users) {
     userList.innerHTML = '';
@@ -273,42 +223,18 @@ function connectSocket() {
 
             // Slide preview / overlay visuals
 
-            async function waitForSlide(url, attempts = 50, delay = 100) {
-                for (let i = 0; i < attempts; i++) {
-                    try {
-                        const res = await fetch(url, { method: 'HEAD' });
-                        if (res.ok) return true;
-                    } catch { }
-                    await new Promise((r) => setTimeout(r, delay));
-                }
-                return false;
-            }
-
-            async function updateSlideImage(container, slideNumber, className) {
-                const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
-
-                const ready = await waitForSlide(url);
-                if (!ready) {
-                    console.log(`Slide not ready yet: ${slideNumber}`);
-                    return;
-                }
-
-                const img = new Image();
-                img.className = className;
-                img.src = `${url}?${Date.now()}`;
-
-                img.onload = () => {
-                    container.innerHTML = '';
-                    container.appendChild(img);
-                };
-            }
 
             if (data.type === 'slideState') {
                 const currentSlide = Number(data.slideNumber) || 1;
+
                 const img = document.getElementById('mainSlideImg');
 
                 if (img) {
-                    img.src = `/slides/Slide${currentSlide}.PNG?${Date.now()}`;
+                    const url = `https://remote.mvapphub.com/slides/Slide${currentSlide}.PNG`;
+
+                    console.log("SETTING IMAGE:", url);
+
+                    img.src = url + '?' + Date.now();
                 }
             }
 
