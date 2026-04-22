@@ -54,28 +54,31 @@ async function uploadSlides(slideNumber) {
         `Slide${slideNumber}.PNG`,
         `Slide${slideNumber + 1}.PNG`
     ];
-
     for (const file of targets) {
         const filePath = path.join(slidesDir, file);
 
         // wait for file to exist
         let retries = 0;
-        while (!fs.existsSync(filePath) && retries < 10) {
-            await new Promise(r => setTimeout(r, 100));
-            retries++;
+        let ready = false;
+
+        while (retries < 15) {
+            try {
+                fs.accessSync(filePath, fs.constants.R_OK);
+                ready = true;
+                break;
+            } catch {
+                await new Promise(r => setTimeout(r, 100));
+                retries++;
+            }
         }
 
-        if (!fs.existsSync(filePath)) {
-            console.log("File never appeared:", file);
-            continue;
-        }
-
-        try {
-            const fileBuffer = fs.readFileSync(filePath);
-        } catch (err) {
+        if (!ready) {
             console.log("Skipping locked file:", file);
             continue;
         }
+
+        // THIS LINE FIXES YOUR ERROR
+        const fileBuffer = fs.readFileSync(filePath);
 
         try {
             const response = await fetch("https://remote.mvapphub.com/upload-slide", {
