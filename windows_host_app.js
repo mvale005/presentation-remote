@@ -58,18 +58,16 @@ async function uploadSlides(slideNumber) {
     for (const file of targets) {
         const filePath = path.join(slidesDir, file);
 
-        if (!fs.existsSync(filePath)) continue;
-
-        // wait until file is not locked
+        // wait for file to exist
         let retries = 0;
-        while (retries < 10) {
-            try {
-                fs.accessSync(filePath, fs.constants.R_OK);
-                break;
-            } catch {
-                await new Promise(r => setTimeout(r, 50));
-                retries++;
-            }
+        while (!fs.existsSync(filePath) && retries < 10) {
+            await new Promise(r => setTimeout(r, 100));
+            retries++;
+        }
+
+        if (!fs.existsSync(filePath)) {
+            console.log("File never appeared:", file);
+            continue;
         }
 
         try {
