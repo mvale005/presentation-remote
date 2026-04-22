@@ -278,58 +278,60 @@ function connect() {
     });
 }
 
-function triggerExport(slideNumber) {
-    // If already exporting, remember latest request
-    if (isExporting) {
-        pendingSlide = slideNumber;
-        return;
-    }
+async function triggerExport(slideNumber) {
+  if (isExporting) {
+    pendingSlide = slideNumber;
+    return;
+  }
 
-    isExporting = true;
+  isExporting = true;
 
-    console.log("EXPORT START:", slideNumber);
+  console.log("EXPORT START:", slideNumber);
 
-    // Start export immediately
-    exportSlides(slideNumber);
+  // 1. export
+  await new Promise(resolve => {
+    exec(
+      `powershell -ExecutionPolicy Bypass -File "C:\\presentation-host\\export.ps1" -slideIndex ${slideNumber}`,
+      () => resolve()
+    );
+  });
 
-    setTimeout(async () => {
-        // Wait for upload to finish
-        await uploadSlides(slideNumber);
+  // 2. upload
+  await uploadSlides(slideNumber);
 
-        // confirm file exists on server before notifying frontend
-        const checkUrl = `https://mvapphub.com/slides/Slide${slideNumber}.PNG`;
+  // 3. VERIFY FILE EXISTS ON SERVER
+  const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
 
-        let ready = false;
-        for (let i = 0; i < 15; i++) {
-            try {
-                const res = await fetch(checkUrl, { method: 'HEAD' });
-                if (res.ok) {
-                    ready = true;
-                    break;
-                }
-            } catch { }
-            await new Promise(r => setTimeout(r, 150));
-        }
+  let ready = false;
+  for (let i = 0; i < 20; i++) {
+    try {
+      const res = await fetch(url, { method: 'HEAD' });
+      if (res.ok) {
+        ready = true;
+        break;
+      }
+    } catch {}
 
-        console.log("SERVER READY:", ready, slideNumber);
+    await new Promise(r => setTimeout(r, 150));
+  }
 
-        if (ready && socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify({
-                type: 'slideState',
-                slideNumber: slideNumber
-            }));
-        }
+  console.log("SERVER READY:", ready);
 
-        isExporting = false;
+  // 4. ONLY NOW notify frontend
+  if (ready && socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({
+      type: 'slideState',
+      slideNumber
+    }));
+  }
 
-        // If user clicked ahead, process latest request
-        if (pendingSlide !== null && pendingSlide !== slideNumber) {
-            const next = pendingSlide;
-            pendingSlide = null;
-            triggerExport(next);
-        }
+  isExporting = false;
 
-    }, 300); // slight delay for export to begin
+  if (pendingSlide !== null && pendingSlide !== slideNumber) {
+    const next = pendingSlide;
+    pendingSlide = null;
+    triggerExport(next);
+  }
 }
 
 // -----------------------------
