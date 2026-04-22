@@ -64,6 +64,31 @@ function addLog(message) {
     }
 }
 
+function waitForImage(url, attempts = 20, delay = 150) {
+  return new Promise((resolve) => {
+    let tries = 0;
+
+    const check = () => {
+      const img = new Image();
+
+      img.onload = () => resolve(url);
+      img.onerror = () => {
+        tries++;
+        if (tries >= attempts) {
+          console.log("Image never loaded:", url);
+          resolve(url); // fallback anyway
+        } else {
+          setTimeout(check, delay);
+        }
+      };
+
+      img.src = url + '?' + Date.now();
+    };
+
+    check();
+  });
+}
+
 function loadImageWithRetry(container, slideNumber, className) {
     let attempts = 0;
 
@@ -280,15 +305,15 @@ function connectSocket() {
 
             if (data.type === 'slideState') {
                 const currentSlide = Number(data.slideNumber) || 1;
-
                 const img = document.getElementById('mainSlideImg');
 
-                if (img) {
-                    const url = `https://remote.mvapphub.com/slides/Slide${currentSlide}.PNG?${Date.now()}`;
-                    console.log("Loading image:", url);
+                if (!img) return;
 
-                    img.src = url;
-                }
+                const url = `https://mvapphub.com/slides/Slide${currentSlide}.PNG`;
+
+                waitForImage(url).then((readyUrl) => {
+                    img.src = readyUrl + '?' + Date.now(); // force refresh
+                });
             }
 
 
