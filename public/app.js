@@ -65,28 +65,28 @@ function addLog(message) {
 }
 
 function waitForImage(url, attempts = 20, delay = 150) {
-  return new Promise((resolve) => {
-    let tries = 0;
+    return new Promise((resolve) => {
+        let tries = 0;
 
-    const check = () => {
-      const img = new Image();
+        const check = () => {
+            const img = new Image();
 
-      img.onload = () => resolve(url);
-      img.onerror = () => {
-        tries++;
-        if (tries >= attempts) {
-          console.log("Image never loaded:", url);
-          resolve(url); // fallback anyway
-        } else {
-          setTimeout(check, delay);
-        }
-      };
+            img.onload = () => resolve(url);
+            img.onerror = () => {
+                tries++;
+                if (tries >= attempts) {
+                    console.log("Image never loaded:", url);
+                    resolve(url); // fallback anyway
+                } else {
+                    setTimeout(check, delay);
+                }
+            };
 
-      img.src = url + '?' + Date.now();
-    };
+            img.src = url + '?' + Date.now();
+        };
 
-    check();
-  });
+        check();
+    });
 }
 
 function loadImageWithRetry(container, slideNumber, className) {
@@ -307,13 +307,9 @@ function connectSocket() {
                 const currentSlide = Number(data.slideNumber) || 1;
                 const img = document.getElementById('mainSlideImg');
 
-                if (!img) return;
-
-                const url = `https://mvapphub.com/slides/Slide${currentSlide}.PNG`;
-
-                waitForImage(url).then((readyUrl) => {
-                    img.src = readyUrl + '?' + Date.now(); // force refresh
-                });
+                if (img) {
+                    img.src = `https://mvapphub.com/slides/Slide${currentSlide}.PNG?${Date.now()}`;
+                }
             }
 
 

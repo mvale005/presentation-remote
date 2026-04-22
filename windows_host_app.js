@@ -47,96 +47,96 @@ function exportSlides(slideNumber) {
 // UPLOAD SLIDES
 // -----------------------------
 async function uploadSlides(slideNumber) {
-  console.log("UPLOAD FUNCTION CALLED:", slideNumber);
+    console.log("UPLOAD FUNCTION CALLED:", slideNumber);
 
-  const slidesDir = "C:\\presentation-host\\public\\slides";
+    const slidesDir = "C:\\presentation-host\\public\\slides";
 
-  const targets = [
-    `Slide${slideNumber}.PNG`,
-    `Slide${slideNumber + 1}.PNG`
-  ];
+    const targets = [
+        `Slide${slideNumber}.PNG`,
+        `Slide${slideNumber + 1}.PNG`
+    ];
 
-  for (const file of targets) {
-    const filePath = path.join(slidesDir, file);
+    for (const file of targets) {
+        const filePath = path.join(slidesDir, file);
 
-    let fileBuffer = null;
+        let fileBuffer = null;
 
-    // 🔥 Wait until file is actually readable (not locked)
-    for (let i = 0; i < 15; i++) {
-      try {
-        fileBuffer = fs.readFileSync(filePath);
-        break; // success
-      } catch (err) {
-        // file not ready yet → wait
-        await new Promise(r => setTimeout(r, 100));
-      }
+        // 🔥 Wait until file is actually readable (not locked)
+        for (let i = 0; i < 15; i++) {
+            try {
+                fileBuffer = fs.readFileSync(filePath);
+                break; // success
+            } catch (err) {
+                // file not ready yet → wait
+                await new Promise(r => setTimeout(r, 100));
+            }
+        }
+
+        if (!fileBuffer) {
+            console.log("Skipping file (still locked or missing):", file);
+            continue;
+        }
+
+        try {
+            const response = await fetch("https://remote.mvapphub.com/upload-slide", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/octet-stream",
+                    "File-Name": file
+                },
+                body: fileBuffer
+            });
+
+            console.log("UPLOAD STATUS:", response.status);
+
+            const text = await response.text();
+            console.log("UPLOAD RESPONSE:", text);
+
+        } catch (err) {
+            console.log("UPLOAD FAILED:", err.message);
+        }
     }
 
-    if (!fileBuffer) {
-      console.log("Skipping file (still locked or missing):", file);
-      continue;
-    }
-
-    try {
-      const response = await fetch("https://remote.mvapphub.com/upload-slide", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/octet-stream",
-          "File-Name": file
-        },
-        body: fileBuffer
-      });
-
-      console.log("UPLOAD STATUS:", response.status);
-
-      const text = await response.text();
-      console.log("UPLOAD RESPONSE:", text);
-
-    } catch (err) {
-      console.log("UPLOAD FAILED:", err.message);
-    }
-  }
-
-  console.log("Slides upload complete");
+    console.log("Slides upload complete");
 }
 ///---------------------
 // helper function 
 //----------------------
 async function waitForServerFile(slideNumber) {
-  const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
+    const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
 
-  for (let i = 0; i < 10; i++) {
-    try {
-      const res = await fetch(url, { method: 'HEAD' });
+    for (let i = 0; i < 10; i++) {
+        try {
+            const res = await fetch(url, { method: 'HEAD' });
 
-      if (res.status === 200) {
-        return true;
-      }
-    } catch {}
+            if (res.status === 200) {
+                return true;
+            }
+        } catch { }
 
-    await new Promise(r => setTimeout(r, 100));
-  }
+        await new Promise(r => setTimeout(r, 100));
+    }
 
-  return false;
+    return false;
 }
 
 
 async function waitForServerFile(slideNumber) {
-  const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
+    const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
 
-  for (let i = 0; i < 10; i++) {
-    try {
-      const res = await fetch(url, { method: 'HEAD' });
+    for (let i = 0; i < 10; i++) {
+        try {
+            const res = await fetch(url, { method: 'HEAD' });
 
-      if (res.status === 200) {
-        return true;
-      }
-    } catch {}
+            if (res.status === 200) {
+                return true;
+            }
+        } catch { }
 
-    await new Promise(r => setTimeout(r, 100));
-  }
+        await new Promise(r => setTimeout(r, 100));
+    }
 
-  return false;
+    return false;
 }
 
 // -----------------------------
@@ -246,7 +246,7 @@ function connect() {
 
                 triggerExport(currentSlide);
 
-                
+
             }
 
             if (action === 'previous') {
@@ -279,61 +279,57 @@ function connect() {
 }
 
 function triggerExport(slideNumber) {
-  // If already exporting, remember latest request
-  if (isExporting) {
-    pendingSlide = slideNumber;
-    return;
-  }
+    // If already exporting, remember latest request
+    if (isExporting) {
+        pendingSlide = slideNumber;
+        return;
+    }
 
-  isExporting = true;
+    isExporting = true;
 
-  console.log("EXPORT START:", slideNumber);
+    console.log("EXPORT START:", slideNumber);
 
-  // Start export immediately
-  exportSlides(slideNumber);
+    // Start export immediately
+    exportSlides(slideNumber);
 
-  setTimeout(async () => {
-    // Wait for upload to finish
-    await uploadSlides(slideNumber);
+    setTimeout(async () => {
+        // Wait for upload to finish
+        await uploadSlides(slideNumber);
 
-    // 🔥 Wait until the file is actually available on the server
-    let ready = false;
-    for (let i = 0; i < 10; i++) {
-      try {
-        const res = await fetch(
-          `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`,
-          { method: 'HEAD' }
-        );
+        // confirm file exists on server before notifying frontend
+        const checkUrl = `https://mvapphub.com/slides/Slide${slideNumber}.PNG`;
 
-        if (res.status === 200) {
-          ready = true;
-          break;
+        let ready = false;
+        for (let i = 0; i < 15; i++) {
+            try {
+                const res = await fetch(checkUrl, { method: 'HEAD' });
+                if (res.ok) {
+                    ready = true;
+                    break;
+                }
+            } catch { }
+            await new Promise(r => setTimeout(r, 150));
         }
-      } catch {}
 
-      await new Promise(r => setTimeout(r, 100));
-    }
+        console.log("SERVER READY:", ready, slideNumber);
 
-    console.log("SERVER READY:", ready, "Slide:", slideNumber);
+        if (ready && socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({
+                type: 'slideState',
+                slideNumber: slideNumber
+            }));
+        }
 
-    // Only notify frontend once image is actually ready
-    if (ready && socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({
-        type: 'slideState',
-        slideNumber: slideNumber
-      }));
-    }
+        isExporting = false;
 
-    isExporting = false;
+        // If user clicked ahead, process latest request
+        if (pendingSlide !== null && pendingSlide !== slideNumber) {
+            const next = pendingSlide;
+            pendingSlide = null;
+            triggerExport(next);
+        }
 
-    // If user clicked ahead, process latest request
-    if (pendingSlide !== null && pendingSlide !== slideNumber) {
-      const next = pendingSlide;
-      pendingSlide = null;
-      triggerExport(next);
-    }
-
-  }, 300); // slight delay for export to begin
+    }, 300); // slight delay for export to begin
 }
 
 // -----------------------------
