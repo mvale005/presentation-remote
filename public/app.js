@@ -308,7 +308,7 @@ function connectSocket() {
                 const img = document.getElementById('mainSlideImg');
 
                 if (img) {
-                    img.src = `https://mvapphub.com/slides/Slide${currentSlide}.PNG?${Date.now()}`;
+                    img.src = `https://remote.mvapphub.com/slides/Slide${currentSlide}.PNG?${Date.now()}`;
                 }
             }
 
