@@ -65,32 +65,32 @@ function addLog(message) {
 }
 
 function loadImageWithRetry(container, slideNumber, className) {
-  let attempts = 0;
+    let attempts = 0;
 
-  function tryLoad() {
-    const img = new Image();
-    const src = `/slides/Slide${slideNumber}.PNG?${Date.now()}`;
+    function tryLoad() {
+        const img = new Image();
+        const src = `/slides/Slide${slideNumber}.PNG?${Date.now()}`;
 
-    img.onload = () => {
-      img.className = className;
-      container.innerHTML = '';
-      container.appendChild(img);
-    };
+        img.onload = () => {
+            img.className = className;
+            container.innerHTML = '';
+            container.appendChild(img);
+        };
 
-    img.onerror = () => {
-      attempts++;
+        img.onerror = () => {
+            attempts++;
 
-      if (attempts < 10) {
-        setTimeout(tryLoad, 100);
-      } else {
-        container.innerHTML = `<div>Slide ${slideNumber}</div>`;
-      }
-    };
+            if (attempts < 10) {
+                setTimeout(tryLoad, 100);
+            } else {
+                container.innerHTML = `<div>Slide ${slideNumber}</div>`;
+            }
+        };
 
-    img.src = src;
-  }
+        img.src = src;
+    }
 
-  tryLoad();
+    tryLoad();
 }
 
 function renderUsers(users) {
@@ -246,46 +246,53 @@ function connectSocket() {
         try {
             const data = JSON.parse(event.data);
 
-     // Slide preview / overlay visuals
-// Slide preview / overlay visuals (REAL LOOK)
-if (data.type === 'slideState') {
-  const currentSlide = Number(data.slideNumber) || 1;
+            // Slide preview / overlay visuals
 
-  function getSlideContent(num) {
-    const slides = [
-      {
-        title: "Welcome",
-        body: "This is your presentation remote.\nControl slides from your phone."
-      },
-      {
-        title: "Overview",
-        body: "• Remote control\n• Live preview\n• Notes panel"
-      },
-      {
-        title: "Features",
-        body: "• Multi-device sync\n• Presenter view\n• Real-time updates"
-      },
-      {
-        title: "Next Steps",
-        body: "• Real slide preview\n• Notes sync\n• UI polish"
-      }
-    ];
+            async function waitForSlide(url, attempts = 50, delay = 100) {
+                for (let i = 0; i < attempts; i++) {
+                    try {
+                        const res = await fetch(url, { method: 'HEAD' });
+                        if (res.ok) return true;
+                    } catch { }
+                    await new Promise((r) => setTimeout(r, delay));
+                }
+                return false;
+            }
 
-    return slides[(num - 1) % slides.length];
-  }
+            async function updateSlideImage(container, slideNumber, className) {
+                const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
 
-const timestamp = Date.now();
+                const ready = await waitForSlide(url);
+                if (!ready) {
+                    console.log(`Slide not ready yet: ${slideNumber}`);
+                    return;
+                }
+
+                const img = new Image();
+                img.className = className;
+                img.src = `${url}?${Date.now()}`;
+
+                img.onload = () => {
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                };
+            }
+
+            if (data.type === 'slideState') {
+                const currentSlide = Number(data.slideNumber) || 1;
+
+                if (overlaySlide) {
+                    updateSlideImage(overlaySlide, currentSlide, 'slide-img');
+                }
+
+                if (overlayNextSlide) {
+                    updateSlideImage(overlayNextSlide, currentSlide + 1, 'slide-img small');
+                }
+            }
 
 
-if (overlaySlide) {
-  loadImageWithRetry(overlaySlide, currentSlide, 'slide-img');
-}
+            // Slide preview / overlay visuals (REAL LOOK)
 
-if (overlayNextSlide) {
-  loadImageWithRetry(overlayNextSlide, currentSlide + 1, 'slide-img small');
-}
-
-}
 
             // Room presence updates
             if (data.type === 'roomState') {
