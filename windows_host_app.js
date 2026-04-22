@@ -99,6 +99,45 @@ async function uploadSlides(slideNumber) {
 
   console.log("Slides upload complete");
 }
+///---------------------
+// helper function 
+//----------------------
+async function waitForServerFile(slideNumber) {
+  const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
+
+  for (let i = 0; i < 10; i++) {
+    try {
+      const res = await fetch(url, { method: 'HEAD' });
+
+      if (res.status === 200) {
+        return true;
+      }
+    } catch {}
+
+    await new Promise(r => setTimeout(r, 100));
+  }
+
+  return false;
+}
+
+
+async function waitForServerFile(slideNumber) {
+  const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
+
+  for (let i = 0; i < 10; i++) {
+    try {
+      const res = await fetch(url, { method: 'HEAD' });
+
+      if (res.status === 200) {
+        return true;
+      }
+    } catch {}
+
+    await new Promise(r => setTimeout(r, 100));
+  }
+
+  return false;
+}
 
 // -----------------------------
 // KEY PRESS
@@ -240,6 +279,7 @@ function connect() {
 }
 
 function triggerExport(slideNumber) {
+  // If already exporting, remember latest request
   if (isExporting) {
     pendingSlide = slideNumber;
     return;
@@ -249,15 +289,35 @@ function triggerExport(slideNumber) {
 
   console.log("EXPORT START:", slideNumber);
 
+  // Start export immediately
   exportSlides(slideNumber);
 
   setTimeout(async () => {
+    // Wait for upload to finish
     await uploadSlides(slideNumber);
 
-    console.log("EXPORT DONE:", slideNumber);
+    // 🔥 Wait until the file is actually available on the server
+    let ready = false;
+    for (let i = 0; i < 10; i++) {
+      try {
+        const res = await fetch(
+          `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`,
+          { method: 'HEAD' }
+        );
 
-    // 🔥 ONLY NOW notify frontend
-    if (socket && socket.readyState === WebSocket.OPEN) {
+        if (res.status === 200) {
+          ready = true;
+          break;
+        }
+      } catch {}
+
+      await new Promise(r => setTimeout(r, 100));
+    }
+
+    console.log("SERVER READY:", ready, "Slide:", slideNumber);
+
+    // Only notify frontend once image is actually ready
+    if (ready && socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({
         type: 'slideState',
         slideNumber: slideNumber
@@ -266,12 +326,14 @@ function triggerExport(slideNumber) {
 
     isExporting = false;
 
+    // If user clicked ahead, process latest request
     if (pendingSlide !== null && pendingSlide !== slideNumber) {
       const next = pendingSlide;
       pendingSlide = null;
       triggerExport(next);
     }
-  }, 300);
+
+  }, 300); // slight delay for export to begin
 }
 
 // -----------------------------
