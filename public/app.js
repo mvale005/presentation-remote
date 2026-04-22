@@ -26,6 +26,9 @@ const overlayPrev = document.getElementById('overlayPrev');
 const overlayNext = document.getElementById('overlayNext');
 const overlayNextSlide = document.getElementById('overlayNextSlide');
 
+console.log("overlaySlide:", overlaySlide);
+console.log("overlayNextSlide:", overlayNextSlide);
+
 // -----------------------------
 // App state
 // -----------------------------
