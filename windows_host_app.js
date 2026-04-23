@@ -82,7 +82,7 @@ async function uploadSlides(slideNumber) {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/octet-stream",
-                    "File-Name": file
+                    "File-Name": "current.PNG"
                 },
                 body: fileBuffer
             });
@@ -279,59 +279,59 @@ function connect() {
 }
 
 async function triggerExport(slideNumber) {
-  if (isExporting) {
-    pendingSlide = slideNumber;
-    return;
-  }
+    if (isExporting) {
+        pendingSlide = slideNumber;
+        return;
+    }
 
-  isExporting = true;
+    isExporting = true;
 
-  console.log("EXPORT START:", slideNumber);
+    console.log("EXPORT START:", slideNumber);
 
-  // 1. export
-  await new Promise(resolve => {
-    exec(
-      `powershell -ExecutionPolicy Bypass -File "C:\\presentation-host\\export.ps1" -slideIndex ${slideNumber}`,
-      () => resolve()
-    );
-  });
+    // 1. export
+    await new Promise(resolve => {
+        exec(
+            `powershell -ExecutionPolicy Bypass -File "C:\\presentation-host\\export.ps1" -slideIndex ${slideNumber}`,
+            () => resolve()
+        );
+    });
 
-  // 2. upload
-  await uploadSlides(slideNumber);
+    // 2. upload
+    await uploadSlides(slideNumber);
 
-  // 3. VERIFY FILE EXISTS ON SERVER
-  const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
+    // 3. VERIFY FILE EXISTS ON SERVER
+    const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
 
-  let ready = false;
-  for (let i = 0; i < 20; i++) {
-    try {
-      const res = await fetch(url, { method: 'HEAD' });
-      if (res.ok) {
-        ready = true;
-        break;
-      }
-    } catch {}
+    let ready = false;
+    for (let i = 0; i < 20; i++) {
+        try {
+            const res = await fetch(url, { method: 'HEAD' });
+            if (res.ok) {
+                ready = true;
+                break;
+            }
+        } catch { }
 
-    await new Promise(r => setTimeout(r, 150));
-  }
+        await new Promise(r => setTimeout(r, 150));
+    }
 
-  console.log("SERVER READY:", ready);
+    console.log("SERVER READY:", ready);
 
-  // 4. ONLY NOW notify frontend
-  if (ready && socket && socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify({
-      type: 'slideState',
-      slideNumber
-    }));
-  }
+    // 4. ONLY NOW notify frontend
+    if (ready && socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+            type: 'slideState',
+            slideNumber
+        }));
+    }
 
-  isExporting = false;
+    isExporting = false;
 
-  if (pendingSlide !== null && pendingSlide !== slideNumber) {
-    const next = pendingSlide;
-    pendingSlide = null;
-    triggerExport(next);
-  }
+    if (pendingSlide !== null && pendingSlide !== slideNumber) {
+        const next = pendingSlide;
+        pendingSlide = null;
+        triggerExport(next);
+    }
 }
 
 // -----------------------------

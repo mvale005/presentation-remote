@@ -225,51 +225,43 @@ function connectSocket() {
 
 
             if (data.type === 'slideState') {
-                const currentSlide = Number(data.slideNumber) || 1;
                 const img = document.getElementById('mainSlideImg');
 
-                if (!img) return;
-
-                const baseUrl = `https://remote.mvapphub.com/slides/Slide${currentSlide}.PNG`;
-
-                console.log("WAITING FOR IMAGE:", baseUrl);
-
-                waitForImage(baseUrl).then(() => {
-                    console.log("LOADING IMAGE:", baseUrl);
-                    img.src = baseUrl + '?' + Date.now();
-                });
+                if (img) {
+                    img.src = `https://remote.mvapphub.com/slides/current.PNG?${Date.now()}`;
+                }
             }
 
             //
             function waitForImage(url, maxAttempts = 20, delay = 150) {
-    return new Promise((resolve) => {
-        let attempts = 0;
+                return new Promise((resolve) => {
+                    let attempts = 0;
 
-        function check() {
-            fetch(url, { method: 'HEAD' })
-                .then(res => {
-                    if (res.ok) {
-                        resolve();
-                    } else {
-                        retry();
+                    function check() {
+                        fetch(url, { method: 'HEAD' })
+                            .then(res => {
+                                if (res.ok) {
+                                    resolve();
+                                } else {
+                                    retry();
+                                }
+                            })
+                            .catch(retry);
                     }
-                })
-                .catch(retry);
-        }
 
-        function retry() {
-            attempts++;
-            if (attempts >= maxAttempts) {
-                console.log("GIVING UP:", url);
-                resolve();
-            } else {
-                setTimeout(check, delay);
+                    function retry() {
+                        attempts++;
+                        if (attempts >= maxAttempts) {
+                            console.log("GIVING UP:", url);
+                            resolve();
+                        } else {
+                            setTimeout(check, delay);
+                        }
+                    }
+
+                    check();
+                });
             }
-        }
-
-        check();
-    });
-}
 
 
             // Slide preview / overlay visuals (REAL LOOK)
