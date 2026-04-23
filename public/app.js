@@ -90,7 +90,11 @@ function setOverlayVisible(isVisible) {
 
     if (slideOverlay) {
         slideOverlay.style.display = isVisible ? 'flex' : 'none';
-        slideOverlay.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
+        if (isVisible) {
+            slideOverlay.removeAttribute('aria-hidden');
+        } else {
+            slideOverlay.setAttribute('aria-hidden', 'true');
+        }
     }
 }
 

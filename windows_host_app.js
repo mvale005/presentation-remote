@@ -302,20 +302,7 @@ async function triggerExport(slideNumber) {
     // 3. VERIFY FILE EXISTS ON SERVER
     const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
 
-    let ready = false;
-    for (let i = 0; i < 20; i++) {
-        try {
-            const res = await fetch(url, { method: 'HEAD' });
-            if (res.ok) {
-                ready = true;
-                break;
-            }
-        } catch { }
-
-        await new Promise(r => setTimeout(r, 150));
-    }
-
-    console.log("SERVER READY:", ready);
+  
 
     // 4. ONLY NOW notify frontend
   if (socket && socket.readyState === WebSocket.OPEN) {
