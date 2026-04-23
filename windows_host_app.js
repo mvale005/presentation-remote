@@ -239,39 +239,24 @@ function connect() {
             const sender = String(data.username || 'someone');
 
             if (action === 'next') {
-                console.log(`${sender} → NEXT`);
-                await pressKey('right');
-
                 currentSlide += 1;
-
-                // 🔥 send update immediately
-                if (socket && socket.readyState === WebSocket.OPEN) {
-                    socket.send(JSON.stringify({
-                        type: 'slideState',
-                        slideNumber: currentSlide
-                    }));
-                }
-
-                // backend work happens after
-                triggerExport(currentSlide);
             }
 
             if (action === 'previous') {
-                console.log(`${sender} → PREVIOUS`);
-                await pressKey('left');
-
                 currentSlide = Math.max(1, currentSlide - 1);
-
-                // 🔥 send update immediately (same as next)
-                if (socket && socket.readyState === WebSocket.OPEN) {
-                    socket.send(JSON.stringify({
-                        type: 'slideState',
-                        slideNumber: currentSlide
-                    }));
-                }
-
-                triggerExport(currentSlide);
             }
+
+            // 🔥 ALWAYS update UI immediately
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: 'slideState',
+                    slideNumber: currentSlide
+                }));
+            }
+
+            // 🔥 THEN tell PowerPoint what to do
+            goToSlide(currentSlide);
+            triggerExport(currentSlide);
 
         } catch (err) {
             console.error('Bad message:', err.message);
@@ -288,6 +273,21 @@ function connect() {
     });
 }
 
+function goToSlide(slideNumber) {
+    try {
+        execSync(`
+        powershell -Command "
+        $ppt = [Runtime.InteropServices.Marshal]::GetActiveObject('PowerPoint.Application');
+        if ($ppt.SlideShowWindows.Count -gt 0) {
+            $ppt.SlideShowWindows.Item(1).View.GotoSlide(${slideNumber});
+        }
+        "
+        `);
+    } catch (e) {
+        console.log("PowerPoint navigation failed");
+    }
+}
+
 async function triggerExport(slideNumber) {
     if (isExporting) {
         pendingSlide = slideNumber;
@@ -298,13 +298,9 @@ async function triggerExport(slideNumber) {
 
     console.log("EXPORT START:", slideNumber);
 
-    // 1. export
-    await new Promise(resolve => {
-        exec(
-            `powershell -ExecutionPolicy Bypass -File "C:\\presentation-host\\export.ps1" -slideIndex ${slideNumber}`,
-            () => resolve()
-        );
-    });
+ exec(
+    `powershell -ExecutionPolicy Bypass -File "C:\\presentation-host\\export.ps1" -slideIndex ${slideNumber}`
+);
 
     // 2. upload
     await uploadSlides(slideNumber);
@@ -312,15 +308,6 @@ async function triggerExport(slideNumber) {
     // 3. VERIFY FILE EXISTS ON SERVER
     const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
 
-
-
-    // 4. ONLY NOW notify frontend
-    if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({
-            type: 'slideState',
-            slideNumber: slideNumber
-        }));
-    }
 
     isExporting = false;
 
