@@ -23,6 +23,7 @@ let currentSlide = 1;
 let exportTimeout = null;
 let isExporting = false;
 let pendingSlide = null;
+let isSynced = false;
 
 // -----------------------------
 // EXPORT SLIDES
@@ -229,42 +230,54 @@ function connect() {
         }, 500);
     });
 
- socket.on('message', async (rawMessage) => {
-    try {
-        const data = JSON.parse(rawMessage.toString());
+    socket.on('message', async (rawMessage) => {
+        try {
+            const data = JSON.parse(rawMessage.toString());
 
-        if (data.type !== 'slide') return;
+            if (data.type !== 'slide') return;
 
-        const action = String(data.action || '').toLowerCase();
-        const sender = String(data.username || 'someone');
+            const action = String(data.action || '').toLowerCase();
+            const sender = String(data.username || 'someone');
 
-        if (action === 'next') {
-            console.log(`${sender} → NEXT`);
-            await pressKey('right');   // ✅ reliable control
-            currentSlide += 1;
+            if (action === 'next') {
+                console.log(`${sender} → NEXT`);
+                await pressKey('right');
+
+                if (!isSynced) {
+                    // first interaction: trust PowerPoint only
+                    currentSlide = 2;
+                    isSynced = true;
+                } else {
+                    currentSlide += 1;
+                }
+            }
+
+            if (action === 'previous') {
+                console.log(`${sender} → PREVIOUS`);
+                await pressKey('left');
+
+                if (!isSynced) {
+                    currentSlide = 1;
+                    isSynced = true;
+                } else {
+                    currentSlide = Math.max(1, currentSlide - 1);
+                }
+            }
+            // 🔥 update UI immediately
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: 'slideState',
+                    slideNumber: currentSlide
+                }));
+            }
+
+            // 🔥 background export only
+            triggerExport(currentSlide);
+
+        } catch (err) {
+            console.error('Bad message:', err.message);
         }
-
-        if (action === 'previous') {
-            console.log(`${sender} → PREVIOUS`);
-            await pressKey('left');    // ✅ reliable control
-            currentSlide = Math.max(1, currentSlide - 1);
-        }
-
-        // 🔥 update UI immediately
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify({
-                type: 'slideState',
-                slideNumber: currentSlide
-            }));
-        }
-
-        // 🔥 background export only
-        triggerExport(currentSlide);
-
-    } catch (err) {
-        console.error('Bad message:', err.message);
-    }
-});
+    });
 
     socket.on('close', () => {
         console.log('Disconnected');
