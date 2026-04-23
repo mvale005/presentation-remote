@@ -244,9 +244,16 @@ function connect() {
 
                 currentSlide += 1;
 
+                // 🔥 send update immediately
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({
+                        type: 'slideState',
+                        slideNumber: currentSlide
+                    }));
+                }
+
+                // backend work happens after
                 triggerExport(currentSlide);
-
-
             }
 
             if (action === 'previous') {
@@ -255,12 +262,15 @@ function connect() {
 
                 currentSlide = Math.max(1, currentSlide - 1);
 
-                triggerExport(currentSlide);
+                // 🔥 send update immediately (same as next)
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({
+                        type: 'slideState',
+                        slideNumber: currentSlide
+                    }));
+                }
 
-                socket.send(JSON.stringify({
-                    type: 'slideState',
-                    slideNumber: currentSlide
-                }));
+                triggerExport(currentSlide);
             }
 
         } catch (err) {
@@ -302,15 +312,15 @@ async function triggerExport(slideNumber) {
     // 3. VERIFY FILE EXISTS ON SERVER
     const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
 
-  
+
 
     // 4. ONLY NOW notify frontend
-  if (socket && socket.readyState === WebSocket.OPEN) {
-  socket.send(JSON.stringify({
-    type: 'slideState',
-    slideNumber: slideNumber
-  }));
-}
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+            type: 'slideState',
+            slideNumber: slideNumber
+        }));
+    }
 
     isExporting = false;
 
