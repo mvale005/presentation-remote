@@ -229,39 +229,42 @@ function connect() {
         }, 500);
     });
 
-    socket.on('message', async (rawMessage) => {
-        try {
-            const data = JSON.parse(rawMessage.toString());
+ socket.on('message', async (rawMessage) => {
+    try {
+        const data = JSON.parse(rawMessage.toString());
 
-            if (data.type !== 'slide') return;
+        if (data.type !== 'slide') return;
 
-            const action = String(data.action || '').toLowerCase();
-            const sender = String(data.username || 'someone');
+        const action = String(data.action || '').toLowerCase();
+        const sender = String(data.username || 'someone');
 
-            if (action === 'next') {
-                currentSlide += 1;
-            }
-
-            if (action === 'previous') {
-                currentSlide = Math.max(1, currentSlide - 1);
-            }
-
-            // 🔥 ALWAYS update UI immediately
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({
-                    type: 'slideState',
-                    slideNumber: currentSlide
-                }));
-            }
-
-            // 🔥 THEN tell PowerPoint what to do
-            goToSlide(currentSlide);
-            triggerExport(currentSlide);
-
-        } catch (err) {
-            console.error('Bad message:', err.message);
+        if (action === 'next') {
+            console.log(`${sender} → NEXT`);
+            await pressKey('right');   // ✅ reliable control
+            currentSlide += 1;
         }
-    });
+
+        if (action === 'previous') {
+            console.log(`${sender} → PREVIOUS`);
+            await pressKey('left');    // ✅ reliable control
+            currentSlide = Math.max(1, currentSlide - 1);
+        }
+
+        // 🔥 update UI immediately
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({
+                type: 'slideState',
+                slideNumber: currentSlide
+            }));
+        }
+
+        // 🔥 background export only
+        triggerExport(currentSlide);
+
+    } catch (err) {
+        console.error('Bad message:', err.message);
+    }
+});
 
     socket.on('close', () => {
         console.log('Disconnected');
@@ -273,20 +276,7 @@ function connect() {
     });
 }
 
-function goToSlide(slideNumber) {
-    try {
-        execSync(`
-        powershell -Command "
-        $ppt = [Runtime.InteropServices.Marshal]::GetActiveObject('PowerPoint.Application');
-        if ($ppt.SlideShowWindows.Count -gt 0) {
-            $ppt.SlideShowWindows.Item(1).View.GotoSlide(${slideNumber});
-        }
-        "
-        `);
-    } catch (e) {
-        console.log("PowerPoint navigation failed");
-    }
-}
+
 
 async function triggerExport(slideNumber) {
     if (isExporting) {
@@ -298,9 +288,9 @@ async function triggerExport(slideNumber) {
 
     console.log("EXPORT START:", slideNumber);
 
- exec(
-    `powershell -ExecutionPolicy Bypass -File "C:\\presentation-host\\export.ps1" -slideIndex ${slideNumber}`
-);
+    exec(
+        `powershell -ExecutionPolicy Bypass -File "C:\\presentation-host\\export.ps1" -slideIndex ${slideNumber}`
+    );
 
     // 2. upload
     await uploadSlides(slideNumber);
