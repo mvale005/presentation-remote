@@ -318,12 +318,12 @@ async function triggerExport(slideNumber) {
     console.log("SERVER READY:", ready);
 
     // 4. ONLY NOW notify frontend
-    if (ready && socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({
-            type: 'slideState',
-            slideNumber
-        }));
-    }
+  if (socket && socket.readyState === WebSocket.OPEN) {
+  socket.send(JSON.stringify({
+    type: 'slideState',
+    slideNumber: slideNumber
+  }));
+}
 
     isExporting = false;
 
