@@ -222,6 +222,8 @@ function connect() {
         }));
 
         console.log(`Joined room ${ROOM_CODE}`);
+        currentSlide = 1;
+        isSynced = true;
         console.log("Initial export for slide 1");
         setTimeout(() => {
             console.log("Initial export for slide 1");
@@ -240,28 +242,13 @@ function connect() {
             const sender = String(data.username || 'someone');
 
             if (action === 'next') {
-                console.log(`${sender} → NEXT`);
                 await pressKey('right');
-
-                if (!isSynced) {
-                    // first interaction: trust PowerPoint only
-                    currentSlide = 2;
-                    isSynced = true;
-                } else {
-                    currentSlide += 1;
-                }
+                currentSlide += 1;
             }
 
             if (action === 'previous') {
-                console.log(`${sender} → PREVIOUS`);
                 await pressKey('left');
-
-                if (!isSynced) {
-                    currentSlide = 1;
-                    isSynced = true;
-                } else {
-                    currentSlide = Math.max(1, currentSlide - 1);
-                }
+                currentSlide = Math.max(1, currentSlide - 1);
             }
             // 🔥 update UI immediately
             if (socket && socket.readyState === WebSocket.OPEN) {
