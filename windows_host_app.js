@@ -202,15 +202,26 @@ function connect() {
             const sender = String(data.username || 'someone');
 
             if (action === 'next') {
+                console.log(`${sender} → NEXT`);
                 await pressKey('right');
+
                 currentSlide += 1;
+
+                // 🔥 wait for PowerPoint to move
+                await new Promise(r => setTimeout(r, 150));
             }
 
             if (action === 'previous') {
+                console.log(`${sender} → PREVIOUS`);
                 await pressKey('left');
+
                 currentSlide = Math.max(1, currentSlide - 1);
+
+                // 🔥 wait for PowerPoint to move
+                await new Promise(r => setTimeout(r, 150));
             }
-            // 🔥 update UI immediately
+
+            // 🔥 now update preview AFTER PowerPoint moved
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({
                     type: 'slideState',
@@ -218,7 +229,7 @@ function connect() {
                 }));
             }
 
-            // 🔥 background export only
+            // background export
             triggerExport(currentSlide);
 
         } catch (err) {
