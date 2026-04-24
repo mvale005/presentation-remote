@@ -47,7 +47,7 @@ function startStream() {
 
     const player = flvjs.createPlayer({
         type: 'flv',
-        url: 'http://127.0.0.1:8000/live/test.flv'
+        url: 'http://192.168.7.208:8000/live/test.flv'
     });
 
     player.attachMediaElement(video);
