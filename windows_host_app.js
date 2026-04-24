@@ -25,80 +25,7 @@ let isExporting = false;
 let pendingSlide = null;
 let isSynced = false;
 
-// -----------------------------
-// EXPORT SLIDES
-// -----------------------------
-function exportSlides(slideNumber) {
-    console.log("EXPORT TRIGGERED:", slideNumber);
 
-    exec(
-        `powershell -ExecutionPolicy Bypass -File "C:\\presentation-host\\export.ps1" -slideIndex ${slideNumber}`,
-        (err, stdout, stderr) => {
-            console.log("STDOUT:", stdout);
-            console.log("STDERR:", stderr);
-
-            if (err) {
-                console.log("EXPORT ERROR:", err.message);
-            }
-        }
-    );
-}
-
-// -----------------------------
-// UPLOAD SLIDES
-// -----------------------------
-async function uploadSlides(slideNumber) {
-    console.log("UPLOAD FUNCTION CALLED:", slideNumber);
-
-    const slidesDir = "C:\\presentation-host\\public\\slides";
-
-    const targets = [
-        `Slide${slideNumber}.PNG`
-    ];
-
-    for (const file of targets) {
-        const filePath = path.join(slidesDir, file);
-
-        let fileBuffer = null;
-
-        // 🔥 Wait until file is actually readable (not locked)
-        for (let i = 0; i < 15; i++) {
-            try {
-                fileBuffer = fs.readFileSync(filePath);
-                break; // success
-            } catch (err) {
-                // file not ready yet → wait
-                await new Promise(r => setTimeout(r, 100));
-            }
-        }
-
-        if (!fileBuffer) {
-            console.log("Skipping file (still locked or missing):", file);
-            continue;
-        }
-
-        try {
-            const response = await fetch("https://remote.mvapphub.com/upload-slide", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/octet-stream",
-                    "File-Name": "current.PNG"
-                },
-                body: fileBuffer
-            });
-
-            console.log("UPLOAD STATUS:", response.status);
-
-            const text = await response.text();
-            console.log("UPLOAD RESPONSE:", text);
-
-        } catch (err) {
-            console.log("UPLOAD FAILED:", err.message);
-        }
-    }
-
-    console.log("Slides upload complete");
-}
 
 // -----------------------------
 // KEY PRESS
@@ -148,19 +75,7 @@ function scheduleReconnect() {
 
     reconnectTimer = setTimeout(connect, delay);
 }
-// -----------------------------
-// CLEAR SERVER SLIDES
-// -----------------------------
-async function clearServerSlides() {
-    try {
-        await fetch("https://remote.mvapphub.com/clear-slides", {
-            method: "POST"
-        });
-        console.log("Server slides cleared");
-    } catch (err) {
-        console.log("Failed to clear server slides", err.message);
-    }
-}
+
 // -----------------------------
 // CONNECT
 // -----------------------------
@@ -172,7 +87,6 @@ function connect() {
     socket.on('open', () => {
         reconnectAttempts = 0;
         console.log('Connected to server.');
-        clearServerSlides();
 
         socket.send(JSON.stringify({
             type: 'join',
@@ -185,11 +99,7 @@ function connect() {
         currentSlide = 1;
         isSynced = true;
         console.log("Initial export for slide 1");
-        setTimeout(() => {
-            console.log("Initial export for slide 1");
-            exportSlides(1);
-            uploadSlides(1);
-        }, 500);
+
     });
 
     socket.on('message', async (rawMessage) => {
@@ -229,8 +139,6 @@ function connect() {
                 }));
             }
 
-            // background export
-            triggerExport(currentSlide);
 
         } catch (err) {
             console.error('Bad message:', err.message);
@@ -248,32 +156,6 @@ function connect() {
 }
 
 
-
-async function triggerExport(slideNumber) {
-    if (isExporting) {
-        pendingSlide = slideNumber;
-        return;
-    }
-
-    isExporting = true;
-
-    console.log("EXPORT START:", slideNumber);
-
-    exportSlides(slideNumber);
-    await uploadSlides(slideNumber);
-
-    // 3. VERIFY FILE EXISTS ON SERVER
-    const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
-
-
-    isExporting = false;
-
-    if (pendingSlide !== null && pendingSlide !== slideNumber) {
-        const next = pendingSlide;
-        pendingSlide = null;
-        triggerExport(next);
-    }
-}
 
 // -----------------------------
 // HEARTBEAT
