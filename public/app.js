@@ -18,50 +18,6 @@ const hostStatusBar = document.getElementById('hostStatusBar');
 const hostStatusDot = document.getElementById('hostStatusDot');
 const hostStatusText = document.getElementById('hostStatusText');
 const hostHint = document.getElementById('hostHint');
-const overlayNextSlide = document.getElementById('overlayNextSlide');
-const SLIDE_BASE_URL = "https://remote.mvapphub.com/slides";
-
-console.log("overlaySlide:", overlaySlide);
-console.log("overlayNextSlide:", overlayNextSlide);
-
-
-async function startStream() {
-    const video = document.getElementById('livePreview');
-
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: false
-        });
-
-        video.srcObject = stream;
-        console.log("Virtual camera stream started");
-
-    } catch (err) {
-        console.error("Camera access failed:", err);
-    }
-}
-
-    const video = document.getElementById('livePreview');
-    if (!video) return;
-
-    // prevent duplicate players
-    if (video._player) {
-        return;
-    }
-
-    const player = flvjs.createPlayer({
-        type: 'flv',
-        url: 'http://192.168.7.208:8000/live/test.flv'
-    });
-
-    player.attachMediaElement(video);
-    player.load();
-    player.play();
-
-    video._player = player;
-
-    console.log("Stream started");
 
 
 // -----------------------------
@@ -74,7 +30,7 @@ let shouldReconnect = false;
 let reconnectTimer = null;
 let reconnectAttempts = 0;
 let lastClickTime = 0;
-let overlayVisible = false;
+
 
 // -----------------------------
 // Config
@@ -99,9 +55,6 @@ function addLog(message) {
     }
 }
 
-
-
-
 function renderUsers(users) {
     userList.innerHTML = '';
 
@@ -118,8 +71,6 @@ function renderUsers(users) {
         userList.appendChild(item);
     });
 }
-
-
 
 function setHostPresence(users) {
     const hasHost = Array.isArray(users) && users.includes('Windows Host');
@@ -248,41 +199,6 @@ function connectSocket() {
         try {
             const data = JSON.parse(event.data);
 
-        
-            function waitForImage(url, maxAttempts = 20, delay = 150) {
-                return new Promise((resolve) => {
-                    let attempts = 0;
-
-                    function check() {
-                        fetch(url, { method: 'HEAD' })
-                            .then(res => {
-                                if (res.ok) {
-                                    resolve();
-                                } else {
-                                    retry();
-                                }
-                            })
-                            .catch(retry);
-                    }
-
-                    function retry() {
-                        attempts++;
-                        if (attempts >= maxAttempts) {
-                            console.log("GIVING UP:", url);
-                            resolve();
-                        } else {
-                            setTimeout(check, delay);
-                        }
-                    }
-
-                    check();
-                });
-            }
-
-
-            // Slide preview / overlay visuals (REAL LOOK)
-
-
             // Room presence updates
             if (data.type === 'roomState') {
                 const users = data.users || [];
@@ -410,11 +326,7 @@ nameInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') joinBtn.click();
 });
 
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && overlayVisible) {
-        setOverlayVisible(false);
-    }
-});
+
 
 // Heartbeat keeps the socket warm
 setInterval(() => {
