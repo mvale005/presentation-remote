@@ -31,11 +31,22 @@ console.log("overlaySlide:", overlaySlide);
 console.log("overlayNextSlide:", overlayNextSlide);
 
 
-function startStream() {
-    if (!flvjs.isSupported()) {
-        console.log("FLV not supported");
-        return;
+async function startStream() {
+    const video = document.getElementById('livePreview');
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+        });
+
+        video.srcObject = stream;
+        console.log("Virtual camera stream started");
+
+    } catch (err) {
+        console.error("Camera access failed:", err);
     }
+}
 
     const video = document.getElementById('livePreview');
     if (!video) return;
