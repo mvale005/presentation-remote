@@ -30,6 +30,35 @@ const SLIDE_BASE_URL = "https://remote.mvapphub.com/slides";
 console.log("overlaySlide:", overlaySlide);
 console.log("overlayNextSlide:", overlayNextSlide);
 
+
+function startStream() {
+    if (!flvjs.isSupported()) {
+        console.log("FLV not supported");
+        return;
+    }
+
+    const video = document.getElementById('livePreview');
+    if (!video) return;
+
+    // prevent duplicate players
+    if (video._player) {
+        return;
+    }
+
+    const player = flvjs.createPlayer({
+        type: 'flv',
+        url: 'http://127.0.0.1:8000/live/test.flv'
+    });
+
+    player.attachMediaElement(video);
+    player.load();
+    player.play();
+
+    video._player = player;
+
+    console.log("Stream started");
+}
+
 // -----------------------------
 // App state
 // -----------------------------
@@ -228,13 +257,7 @@ function connectSocket() {
             // Slide preview / overlay visuals
 
 
-            if (data.type === 'slideState') {
-                const img = document.getElementById('mainSlideImg');
-
-                if (img) {
-                    img.src = `https://remote.mvapphub.com/slides/current.PNG?${Date.now()}`;
-                }
-            }
+         //
 
             //
             function waitForImage(url, maxAttempts = 20, delay = 150) {
@@ -397,14 +420,26 @@ leaveBtn.addEventListener('click', () => {
 prevBtn.addEventListener('click', () => sendSlideAction('Previous'));
 nextBtn.addEventListener('click', () => sendSlideAction('Next'));
 
-if (viewSlidesBtn) {
-    viewSlidesBtn.addEventListener('click', () => {
-        setOverlayVisible(!overlayVisible);
-    });
-}
+viewSlidesBtn.addEventListener('click', () => {
+    const willOpen = !overlayVisible;
+
+    setOverlayVisible(willOpen);
+
+    if (willOpen) {
+        setTimeout(startStream, 200);
+    }
+});
 
 if (closeOverlay) {
-    closeOverlay.addEventListener('click', () => setOverlayVisible(false));
+    closeOverlay.addEventListener('click', () => {
+        setOverlayVisible(false);
+
+        const video = document.getElementById('livePreview');
+        if (video && video._player) {
+            video._player.destroy();
+            video._player = null;
+        }
+    });
 }
 
 if (overlayPrev) {

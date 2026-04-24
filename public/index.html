@@ -19,6 +19,8 @@
 
 <body>
 
+  <script src="https://cdn.jsdelivr.net/npm/flv.js@latest"></script>
+
   <!-- Main app container -->
   <main class="app">
 
@@ -123,6 +125,10 @@
   </main>
 
   <!-- Fullscreen slide preview overlay -->
+
+  <div id="overlaySlide" class="slide-content">
+    <video id="livePreview" autoplay muted controls class="slide-video"></video>
+  </div>
   <div id="slideOverlay" class="overlay" aria-hidden="true">
 
     <!-- Close overlay button -->
@@ -139,7 +145,7 @@
             <div class="overlay-label">Current slide</div>
             <div class="slide-frame">
               <div id="overlaySlide" class="slide-content">
-                <img id="mainSlideImg" class="slide-img" />
+                <video id="livePreview" autoplay muted controls class="slide-video"></video>
               </div>
             </div>
           </div>
