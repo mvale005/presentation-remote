@@ -68,7 +68,7 @@ async function startStream() {
     video._player = player;
 
     console.log("Stream started");
-}
+
 
 // -----------------------------
 // App state
