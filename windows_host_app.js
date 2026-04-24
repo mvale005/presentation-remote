@@ -53,8 +53,7 @@ async function uploadSlides(slideNumber) {
     const slidesDir = "C:\\presentation-host\\public\\slides";
 
     const targets = [
-        `Slide${slideNumber}.PNG`,
-        `Slide${slideNumber + 1}.PNG`
+        `Slide${slideNumber}.PNG`
     ];
 
     for (const file of targets) {
@@ -99,45 +98,6 @@ async function uploadSlides(slideNumber) {
     }
 
     console.log("Slides upload complete");
-}
-///---------------------
-// helper function 
-//----------------------
-async function waitForServerFile(slideNumber) {
-    const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
-
-    for (let i = 0; i < 10; i++) {
-        try {
-            const res = await fetch(url, { method: 'HEAD' });
-
-            if (res.status === 200) {
-                return true;
-            }
-        } catch { }
-
-        await new Promise(r => setTimeout(r, 100));
-    }
-
-    return false;
-}
-
-
-async function waitForServerFile(slideNumber) {
-    const url = `https://remote.mvapphub.com/slides/Slide${slideNumber}.PNG`;
-
-    for (let i = 0; i < 10; i++) {
-        try {
-            const res = await fetch(url, { method: 'HEAD' });
-
-            if (res.status === 200) {
-                return true;
-            }
-        } catch { }
-
-        await new Promise(r => setTimeout(r, 100));
-    }
-
-    return false;
 }
 
 // -----------------------------
@@ -288,11 +248,7 @@ async function triggerExport(slideNumber) {
 
     console.log("EXPORT START:", slideNumber);
 
-    exec(
-        `powershell -ExecutionPolicy Bypass -File "C:\\presentation-host\\export.ps1" -slideIndex ${slideNumber}`
-    );
-
-    // 2. upload
+    exportSlides(slideNumber);
     await uploadSlides(slideNumber);
 
     // 3. VERIFY FILE EXISTS ON SERVER
