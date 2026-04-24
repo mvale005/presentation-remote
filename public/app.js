@@ -18,12 +18,6 @@ const hostStatusBar = document.getElementById('hostStatusBar');
 const hostStatusDot = document.getElementById('hostStatusDot');
 const hostStatusText = document.getElementById('hostStatusText');
 const hostHint = document.getElementById('hostHint');
-const viewSlidesBtn = document.getElementById('viewSlidesBtn');
-const slideOverlay = document.getElementById('slideOverlay');
-const overlaySlide = document.getElementById('overlaySlide');
-const closeOverlay = document.getElementById('closeOverlay');
-const overlayPrev = document.getElementById('overlayPrev');
-const overlayNext = document.getElementById('overlayNext');
 const overlayNextSlide = document.getElementById('overlayNextSlide');
 const SLIDE_BASE_URL = "https://remote.mvapphub.com/slides";
 
@@ -125,18 +119,7 @@ function renderUsers(users) {
     });
 }
 
-function setOverlayVisible(isVisible) {
-    overlayVisible = isVisible;
 
-    if (slideOverlay) {
-        slideOverlay.style.display = isVisible ? 'flex' : 'none';
-        if (isVisible) {
-            slideOverlay.removeAttribute('aria-hidden');
-        } else {
-            slideOverlay.setAttribute('aria-hidden', 'true');
-        }
-    }
-}
 
 function setHostPresence(users) {
     const hasHost = Array.isArray(users) && users.includes('Windows Host');
@@ -265,12 +248,7 @@ function connectSocket() {
         try {
             const data = JSON.parse(event.data);
 
-            // Slide preview / overlay visuals
-
-
-         //
-
-            //
+        
             function waitForImage(url, maxAttempts = 20, delay = 150) {
                 return new Promise((resolve) => {
                     let attempts = 0;
@@ -421,35 +399,8 @@ leaveBtn.addEventListener('click', () => {
 prevBtn.addEventListener('click', () => sendSlideAction('Previous'));
 nextBtn.addEventListener('click', () => sendSlideAction('Next'));
 
-viewSlidesBtn.addEventListener('click', () => {
-    const willOpen = !overlayVisible;
 
-    setOverlayVisible(willOpen);
 
-    if (willOpen) {
-        setTimeout(startStream, 200);
-    }
-});
-
-if (closeOverlay) {
-    closeOverlay.addEventListener('click', () => {
-        setOverlayVisible(false);
-
-        const video = document.getElementById('livePreview');
-        if (video && video._player) {
-            video._player.destroy();
-            video._player = null;
-        }
-    });
-}
-
-if (overlayPrev) {
-    overlayPrev.addEventListener('click', () => sendSlideAction('Previous'));
-}
-
-if (overlayNext) {
-    overlayNext.addEventListener('click', () => sendSlideAction('Next'));
-}
 
 roomCodeInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') joinBtn.click();
@@ -493,4 +444,3 @@ window.addEventListener('pageshow', attemptResumeConnection);
 
 // Initial UI state
 setConnectedState(false, '');
-setOverlayVisible(false);

@@ -15,12 +15,9 @@
 
   <!-- Main stylesheet -->
   <link rel="stylesheet" href="/styles.css" />
-   <script src="https://cdn.jsdelivr.net/npm/flv.js@latest"></script>
+
 </head>
-
 <body>
-
- 
 
   <!-- Main app container -->
   <main class="app">
@@ -113,8 +110,6 @@
         <button class="next" id="nextBtn" disabled>Next</button>
       </div>
 
-      <!-- Toggle slide preview overlay -->
-      <button class="ghost" id="viewSlidesBtn">View Slides</button>
 
       <!-- Helper text when host is missing -->
       <p id="hostHint" class="footer-note">Waiting for host to connect...</p>
@@ -127,58 +122,7 @@
 
   <!-- Fullscreen slide preview overlay -->
 
-  <div id="overlaySlide" class="slide-content">
-<video id="livePreview" autoplay muted playsinline class="slide-video"></video>  </div>
-  <div id="slideOverlay" class="overlay" aria-hidden="true">
 
-    <!-- Close overlay button -->
-    <button id="closeOverlay" class="ghost overlay-close">Close</button>
-
-    <div class="overlay-inner">
-      <button id="overlayPrev" class="overlay-arrow overlay-prev" aria-label="Previous slide">←</button>
-
-      <div class="overlay-panels">
-
-        <!-- LEFT: CURRENT SLIDE -->
-        <div class="overlay-current">
-          <div>
-            <div class="overlay-label">Current slide</div>
-            <div class="slide-frame">
-              <div id="overlaySlide" class="slide-content">
-                <video id="livePreview" autoplay muted controls class="slide-video"></video>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- RIGHT COLUMN -->
-        <div class="overlay-side">
-
-          <!-- TOP RIGHT: NEXT SLIDE -->
-          <div class="overlay-next-card">
-            <div>
-              <div class="overlay-label">Next slide</div>
-              <div class="slide-frame small">
-                <div id="overlayNextSlide" class="slide-content small">Slide 2</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- BOTTOM RIGHT: NOTES -->
-          <div class="overlay-notes">
-            <div class="overlay-label">Notes</div>
-            <div id="overlayNotes" class="overlay-notes-text">
-              No notes yet
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-      <button id="overlayNext" class="overlay-arrow overlay-next" aria-label="Next slide">→</button>
-    </div>
-  </div>
 
   <!-- Main application logic -->
   <script src="/app.js"></script>
