@@ -302,17 +302,7 @@ function connectSocket() {
             }
 
             // Log slide actions
-            if (data.type === 'slide') {
-                const who = data.username ? data.username : 'Someone';
-                const actionLabel = String(data.action || '').trim();
-                const isMe = who === currentName;
-
-                addLog(`${isMe ? 'You' : who} → ${actionLabel}`);
-
-                if (lastAction) {
-                    lastAction.textContent = `Last action: ${isMe ? 'You' : who} → ${actionLabel}`;
-                }
-            }
+    
         } catch (err) {
             console.warn('Bad message from server:', err);
         }
